@@ -13,6 +13,11 @@ class JenisSoal extends Model
         return $this->hasMany(Nilai::class);
     }
 
+    public function mapels()
+    {
+        return $this->hasMany(Mapel::class);
+    }
+
     public static function boot()
     {
         parent::boot();

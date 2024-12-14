@@ -12,6 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('qism_details', function (Blueprint $table) {
+            $table->foreignId('jeniskelamin_id')->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
+            $table->foreignId('qism_detail_id')->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();

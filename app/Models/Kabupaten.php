@@ -47,6 +47,11 @@ class Kabupaten extends Model
         return $this->hasMany(Walisantri::class, 'al_w_kabupaten_id');
     }
 
+    public function pendidikanpesantrens()
+    {
+        return $this->hasMany(Pendidikanpesantren::class);
+    }
+
     public static function boot()
     {
         parent::boot();

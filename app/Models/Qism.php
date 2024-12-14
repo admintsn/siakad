@@ -22,6 +22,16 @@ class Qism extends Model
         return $this->hasMany(TahunAjaranAktif::class);
     }
 
+    public function semesters()
+    {
+        return $this->hasMany(Semester::class);
+    }
+
+    public function nomorSurats()
+    {
+        return $this->hasMany(NomorSurat::class);
+    }
+
     public static function boot()
     {
         parent::boot();

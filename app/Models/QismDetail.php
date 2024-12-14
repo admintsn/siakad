@@ -22,6 +22,21 @@ class QismDetail extends Model
         return $this->hasMany(Nilai::class);
     }
 
+    public function jeniskelamin()
+    {
+        return $this->belongsTo(Jeniskelamin::class);
+    }
+
+    public function qismDetail()
+    {
+        return $this->belongsTo(QismDetail::class);
+    }
+
+    public function qismDetails()
+    {
+        return $this->hasMany(QismDetail::class);
+    }
+
     public static function boot()
     {
         parent::boot();

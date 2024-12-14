@@ -11,19 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mapels', function (Blueprint $table) {
-            $table->foreignId('jenis_soal_id')->nullable()
-                ->constrained()
-                ->cascadeOnUpdate()
-                ->nullOnDelete();
+        Schema::create('jurusanpfs', function (Blueprint $table) {
+            $table->id();
+            $table->string('jurusan_pf')->nullable();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+
+            $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void {}
+    public function down(): void
+    {
+        Schema::dropIfExists('jurusanpfs');
+    }
 };

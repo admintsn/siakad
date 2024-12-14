@@ -5,46 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class Mahad extends Model
+class NomorSurat extends Model
 {
-    public function kelasSantris()
+    public function mahad()
     {
-        return $this->hasMany(KelasSantri::class);
+        return $this->belongsTo(Mahad::class);
     }
 
-    public function provinsi()
+    public function qism()
     {
-        return $this->belongsTo(Provinsi::class);
+        return $this->belongsTo(Qism::class);
     }
 
-    public function kabupaten()
+    public function tujuanSurat()
     {
-        return $this->belongsTo(Kabupaten::class);
+        return $this->belongsTo(TujuanSurat::class);
     }
 
-    public function kecamatan()
+    public function jenisSurat()
     {
-        return $this->belongsTo(Kecamatan::class);
+        return $this->belongsTo(JenisSurat::class);
     }
 
-    public function kelurahan()
+    public function tahunhberjalan()
     {
-        return $this->belongsTo(Kelurahan::class);
+        return $this->belongsTo(Tahunhberjalan::class);
     }
 
-    public function kelass()
+    public function tahunmberjalan()
     {
-        return $this->hasManyThrough(Kelas::class, Qism::class);
+        return $this->belongsTo(Tahunmberjalan::class);
     }
 
-    public function pendidikanpesantrens()
+    public function santri()
     {
-        return $this->hasMany(Pendidikanpesantren::class);
-    }
-
-    public function nomorSurats()
-    {
-        return $this->hasMany(NomorSurat::class);
+        return $this->belongsTo(Santri::class);
     }
 
     public static function boot()

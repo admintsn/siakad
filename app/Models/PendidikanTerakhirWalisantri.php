@@ -12,6 +12,11 @@ class PendidikanTerakhirWalisantri extends Model
         return $this->hasMany(Walisantri::class);
     }
 
+    public function pendidikanformals()
+    {
+        return $this->hasMany(Pendidikanformal::class);
+    }
+
     public static function boot()
     {
         parent::boot();

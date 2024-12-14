@@ -12,6 +12,11 @@ class StatusTempatTinggal extends Model
         return $this->hasMany(Walisantri::class);
     }
 
+    public function santris()
+    {
+        return $this->hasMany(Santri::class);
+    }
+
     public static function boot()
     {
         parent::boot();

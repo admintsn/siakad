@@ -5,8 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class TahunBerjalanAktif extends Model
+class Tahunmberjalan extends Model
 {
+    public function nomorSurats()
+    {
+        return $this->hasMany(NomorSurat::class);
+    }
+
     public static function boot()
     {
         parent::boot();

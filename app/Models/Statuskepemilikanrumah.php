@@ -5,26 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class Semester extends Model
+class Statuskepemilikanrumah extends Model
 {
-    public function kelasSantris()
+    public function walisantris()
     {
-        return $this->hasMany(KelasSantri::class);
+        return $this->hasMany(Walisantri::class);
     }
 
-    public function tahunAjaranAktifs()
+    public function pengajars()
     {
-        return $this->hasMany(TahunAjaranAktif::class);
-    }
-
-    public function sem()
-    {
-        return $this->belongsTo(Sem::class);
-    }
-
-    public function sem_s()
-    {
-        return $this->belongsTo(Sem::class, 'sem_sel');
+        return $this->hasMany(Pengajar::class);
     }
 
     public static function boot()

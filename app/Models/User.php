@@ -133,6 +133,11 @@ class User extends Authenticatable implements FilamentUser
     //     return $this->hasOne(Pendaftar::class);
     // }
 
+    public function panelrole()
+    {
+        return $this->belongsTo(Panelrole::class);
+    }
+
     public static function boot()
     {
         parent::boot();

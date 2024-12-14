@@ -82,6 +82,86 @@ class Santri extends Model
         return $this->belongsTo(KeteranganStatusSantri::class);
     }
 
+    public function kartuKeluargaSamaDengan()
+    {
+        return $this->belongsTo(KartuKeluargaSamaDengan::class);
+    }
+
+    public function cita()
+    {
+        return $this->belongsTo(Cita::class);
+    }
+
+    public function hobi()
+    {
+        return $this->belongsTo(Hobi::class);
+    }
+
+    public function kebutuhanKhusus()
+    {
+        return $this->belongsTo(KebutuhanKhusus::class);
+    }
+
+    public function kebutuhanDisabilitas()
+    {
+        return $this->belongsTo(KebutuhanDisabilitas::class);
+    }
+
+    public function membiayaiSekolah()
+    {
+        return $this->belongsTo(MembiayaiSekolah::class);
+    }
+
+    public function mendaftarKeinginan()
+    {
+        return $this->belongsTo(MendaftarKeinginan::class);
+    }
+
+    public function hafalan()
+    {
+        return $this->belongsTo(Hafalan::class);
+    }
+
+    public function statusTempatTinggal()
+    {
+        return $this->belongsTo(StatusTempatTinggal::class);
+    }
+
+    public function anandaBerada()
+    {
+        return $this->belongsTo(AnandaBerada::class);
+    }
+
+    public function medsosAnanda()
+    {
+        return $this->belongsTo(MedsosAnanda::class);
+    }
+
+    public function jeniskelamin()
+    {
+        return $this->belongsTo(Jeniskelamin::class);
+    }
+
+    public function transpp()
+    {
+        return $this->belongsTo(Transpp::class);
+    }
+
+    public function jarakpp()
+    {
+        return $this->belongsTo(Jarakpp::class);
+    }
+
+    public function waktutempuh()
+    {
+        return $this->belongsTo(Waktutempuh::class);
+    }
+
+    public function nomorSurats()
+    {
+        return $this->hasMany(NomorSurat::class);
+    }
+
     public static function boot()
     {
         parent::boot();

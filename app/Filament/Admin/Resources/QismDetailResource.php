@@ -2,12 +2,14 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\QismResource\Pages;
-use App\Filament\Admin\Resources\QismResource\RelationManagers;
+use App\Filament\Admin\Resources\QismDetailResource\Pages;
+use App\Filament\Admin\Resources\QismDetailResource\RelationManagers;
 use App\Models\Qism;
+use App\Models\QismDetail;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
@@ -25,56 +27,47 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class QismResource extends Resource
+class QismDetailResource extends Resource
 {
-    protected static ?string $model = Qism::class;
+    protected static ?string $model = QismDetail::class;
 
     public static function canViewAny(): bool
     {
         return auth()->user()->id == 1;
     }
 
-    protected static ?string $modelLabel = 'Qism';
+    protected static ?string $modelLabel = 'Qism Detail';
 
-    protected static ?string $pluralModelLabel = 'Qism';
+    protected static ?string $pluralModelLabel = 'Qism Detail';
 
-    protected static ?string $navigationLabel = 'Qism';
+    protected static ?string $navigationLabel = 'Qism Detail';
 
     // protected static ?int $navigationSort = 800000000;
 
-    // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
+    // protected static ?string $navigationIcon = 'heroicon-o-Qism Details';
 
-    // protected static ?string $cluster = ManageQism::class;
+    // protected static ?string $cluster = ManageQism Detail::class;
 
     public static function form(Form $form): Form
     {
         return $form
 
-            ->schema(static::QismFormSchema());
+            ->schema(static::QismDetailFormSchema());
     }
 
-    public static function QismFormSchema(): array
+    public static function QismDetailFormSchema(): array
     {
         return [
 
-            Section::make('Qism')
+            Section::make('Qism Detail')
                 ->schema([
 
                     Grid::make(4)
                         ->schema([
 
-                            TextInput::make('abbr_qism')
+                            Select::make('qism_id')
                                 ->label('Qism')
-                                ->required()
-                                ->unique(Qism::class, ignoreRecord: true),
-
-                        ]),
-
-                    Grid::make(4)
-                        ->schema([
-
-                            TextInput::make('qism')
-                                ->label('Nama')
+                                ->options(Qism::whereIsActive(1)->pluck('abbr_qism', 'id'))
                                 ->required(),
 
                         ]),
@@ -82,8 +75,36 @@ class QismResource extends Resource
                     Grid::make(4)
                         ->schema([
 
-                            TextInput::make('kode_qism')
+                            TextInput::make('abbr_qism_detail')
+                                ->label('Qism Detail')
+                                ->required(),
+
+                        ]),
+
+                    Grid::make(4)
+                        ->schema([
+
+                            TextInput::make('qism_detail')
+                                ->label('Desc')
+                                ->required(),
+
+                        ]),
+
+                    Grid::make(4)
+                        ->schema([
+
+                            TextInput::make('kode_qism_detail')
                                 ->label('Kode Qism')
+                                ->required(),
+
+                        ]),
+
+                    Grid::make(4)
+                        ->schema([
+
+                            ToggleButtons::make('qism_detail_s')
+                                ->label('Qism Selanjutnya')
+                                ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
                                 ->required(),
 
                         ]),
@@ -115,9 +136,9 @@ class QismResource extends Resource
         return $table
             ->columns([
 
-                ColumnGroup::make('Qism', [
+                ColumnGroup::make('Qism Detail', [
 
-                    TextColumn::make('abbr_qism')
+                    TextColumn::make('qism.abbr_qism')
                         ->label('Qism')
                         ->searchable(isIndividual: true, isGlobal: false)
                         ->copyable()
@@ -127,8 +148,8 @@ class QismResource extends Resource
                         ->copyMessage('Tersalin')
                         ->sortable(),
 
-                    TextColumn::make('qism')
-                        ->label('Nama')
+                    TextColumn::make('abbr_qism_detail')
+                        ->label('Qism Detail')
                         ->searchable(isIndividual: true, isGlobal: false)
                         ->copyable()
                         ->copyableState(function ($state) {
@@ -137,8 +158,18 @@ class QismResource extends Resource
                         ->copyMessage('Tersalin')
                         ->sortable(),
 
-                    TextColumn::make('kode_qism')
-                        ->label('Kode Qism')
+                    TextColumn::make('qism_detail')
+                        ->label('Desc')
+                        ->searchable(isIndividual: true, isGlobal: false)
+                        ->copyable()
+                        ->copyableState(function ($state) {
+                            return ($state);
+                        })
+                        ->copyMessage('Tersalin')
+                        ->sortable(),
+
+                    TextColumn::make('kode_qism_detail')
+                        ->label('Kode Qism Detail')
                         ->searchable(isIndividual: true, isGlobal: false)
                         ->copyable()
                         ->copyableState(function ($state) {
@@ -262,10 +293,10 @@ class QismResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListQisms::route('/'),
-            'create' => Pages\CreateQism::route('/create'),
-            'view' => Pages\ViewQism::route('/{record}'),
-            'edit' => Pages\EditQism::route('/{record}/edit'),
+            'index' => Pages\ListQismDetails::route('/'),
+            'create' => Pages\CreateQismDetail::route('/create'),
+            'view' => Pages\ViewQismDetail::route('/{record}'),
+            'edit' => Pages\EditQismDetail::route('/{record}/edit'),
         ];
     }
 }

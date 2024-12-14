@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('walisantris', function (Blueprint $table) {
+        Schema::create('waktutempuhs', function (Blueprint $table) {
+            $table->id();
+            $table->string('waktu_tempuh')->nullable();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+
+            $table->timestamps();
         });
     }
 
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-
+        Schema::dropIfExists('waktutempuhs');
     }
 };

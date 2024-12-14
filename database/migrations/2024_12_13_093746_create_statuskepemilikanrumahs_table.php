@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('santris', function (Blueprint $table) {
+        Schema::create('statuskepemilikanrumahs', function (Blueprint $table) {
+            $table->id();
+            $table->string('status_kepemilikan_rumah')->nullable();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+
+            $table->timestamps();
         });
     }
 
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-
+        Schema::dropIfExists('statuskepemilikanrumahs');
     }
 };

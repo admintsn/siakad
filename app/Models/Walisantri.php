@@ -132,6 +132,11 @@ class Walisantri extends Model
         return $this->belongsTo(PenghasilanWalisantri::class);
     }
 
+    public function statuskepemilikanrumah()
+    {
+        return $this->belongsTo(Statuskepemilikanrumah::class);
+    }
+
     public static function boot()
     {
         parent::boot();
