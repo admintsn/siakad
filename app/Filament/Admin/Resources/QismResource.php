@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -151,9 +152,8 @@ class QismResource extends Resource
 
                 ColumnGroup::make('Status', [
 
-                    IconColumn::make('is_active')
+                    CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->boolean()
                         ->sortable(),
 
                 ]),

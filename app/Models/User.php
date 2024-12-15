@@ -138,6 +138,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Panelrole::class);
     }
 
+    public function qism()
+    {
+        return $this->belongsTo(Panelrole::class, 'mudirqism');
+    }
+
     public static function boot()
     {
         parent::boot();

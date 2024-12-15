@@ -16,6 +16,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -28,6 +30,7 @@ use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -86,7 +89,7 @@ class UserResource extends Resource
                     Grid::make(4)
                         ->schema([
 
-                            ToggleButtons::make('panelrole')
+                            ToggleButtons::make('panelrole_id')
                                 ->label('Panel')
                                 ->required()
                                 ->inline()
@@ -184,7 +187,7 @@ class UserResource extends Resource
 
                 ColumnGroup::make('Panel', [
 
-                    TextColumn::make('panelrole')
+                    TextColumn::make('panelrole.panelrole')
                         ->label('Panel')
                         ->searchable(isIndividual: true, isGlobal: false)
                         ->copyable()
@@ -197,9 +200,8 @@ class UserResource extends Resource
 
                 ColumnGroup::make('Status', [
 
-                    IconColumn::make('is_active')
+                    CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->boolean()
                         ->sortable(),
 
                 ]),
@@ -300,6 +302,36 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
+                BulkAction::make('panelrole')
+                    ->label(__('Update Panel Role'))
+                    ->color('info')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            dd($record->panelrole);
+
+                            if ($record->panelrole = 'admin') {
+
+                                $user = User::where('id', $record->id)->first();
+
+                                $user->panelrole_id = 1;
+                                $user->save();
+                            } elseif ($record->panelrole = 'pengajar') {
+
+                                $user = User::where('id', $record->id)->first();
+                                $user->panelrole_id = 2;
+                                $user->save();
+                            } elseif ($record->panelrole = 'walisantri') {
+
+                                $user = User::where('id', $record->id)->first();
+                                $user->panelrole_id = 3;
+                                $user->save();
+                            }
+                        }
+                    ))
+                    ->deselectRecordsAfterCompletion(),
+
             ]);
     }
 
