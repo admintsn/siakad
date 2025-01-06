@@ -2,8 +2,15 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\ConfigLembaga;
 use App\Filament\Admin\Resources\QismDetailResource\Pages;
+use App\Filament\Admin\Resources\QismDetailResource\Pages\ManageMapel;
 use App\Filament\Admin\Resources\QismDetailResource\RelationManagers;
+use App\Filament\Admin\Resources\QismDetailResource\RelationManagers\MapelsRelationManager;
+use App\Filament\Exports\QismDetailExporter;
+use App\Filament\Imports\QismDetailImporter;
+use App\Models\Jeniskelamin;
+use App\Models\Mapel;
 use App\Models\Qism;
 use App\Models\QismDetail;
 use Filament\Forms;
@@ -13,17 +20,26 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Pages\Page;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\QueryBuilder;
 use Filament\Tables\Filters\QueryBuilder\Constraints\BooleanConstraint;
 use Filament\Tables\Filters\QueryBuilder\Constraints\DateConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\SelectConstraint;
 use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Table;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -42,11 +58,17 @@ class QismDetailResource extends Resource
 
     protected static ?string $navigationLabel = 'Qism Detail';
 
-    // protected static ?int $navigationSort = 800000000;
+    protected static ?int $navigationSort = 800000050;
 
-    // protected static ?string $navigationIcon = 'heroicon-o-Qism Details';
+    // protected static ?string $navigationParentItem = 'Mahad';
 
-    // protected static ?string $cluster = ManageQism Detail::class;
+    // protected static ?string $navigationGroup = 'Configs';
+
+    // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
+
+    protected static ?string $cluster = ConfigLembaga::class;
+
+    // protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
@@ -65,8 +87,9 @@ class QismDetailResource extends Resource
                     Grid::make(4)
                         ->schema([
 
-                            Select::make('qism_id')
+                            ToggleButtons::make('qism_id')
                                 ->label('Qism')
+                                ->inline()
                                 ->options(Qism::whereIsActive(1)->pluck('abbr_qism', 'id'))
                                 ->required(),
 
@@ -77,7 +100,8 @@ class QismDetailResource extends Resource
 
                             TextInput::make('abbr_qism_detail')
                                 ->label('Qism Detail')
-                                ->required(),
+                                ->required()
+                                ->unique(QismDetail::class, ignoreRecord: true),
 
                         ]),
 
@@ -95,17 +119,29 @@ class QismDetailResource extends Resource
 
                             TextInput::make('kode_qism_detail')
                                 ->label('Kode Qism')
-                                ->required(),
+                                ->required()
+                                ->unique(QismDetail::class, ignoreRecord: true),
 
                         ]),
 
                     Grid::make(4)
                         ->schema([
 
-                            ToggleButtons::make('qism_detail_s')
-                                ->label('Qism Selanjutnya')
-                                ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
-                                ->required(),
+                            ToggleButtons::make('jeniskelamin_id')
+                                ->label('Jenis Kelamin')
+                                ->inline()
+                                ->required()
+                                ->options(Jeniskelamin::whereIsActive(1)->pluck('jeniskelamin', 'id')),
+
+                        ]),
+
+                    Grid::make(4)
+                        ->schema([
+
+                            ToggleButtons::make('qism_detail_id')
+                                ->label('Qism Selanjutanya')
+                                ->inline()
+                                ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id')),
 
                         ]),
 
@@ -176,16 +212,37 @@ class QismDetailResource extends Resource
                             return ($state);
                         })
                         ->copyMessage('Tersalin')
+                        ->sortable()
+                        ->alignCenter(),
+
+                    TextColumn::make('jeniskelamin.jeniskelamin')
+                        ->label('Jenis Kelamin')
+                        ->searchable(isIndividual: true, isGlobal: false)
+                        ->copyable()
+                        ->copyableState(function ($state) {
+                            return ($state);
+                        })
+                        ->copyMessage('Tersalin')
+                        ->sortable(),
+
+                    TextColumn::make('qismDetail.abbr_qism_detail')
+                        ->label('Qism Detail Selanjutnya')
+                        ->searchable(isIndividual: true, isGlobal: false)
+                        ->copyable()
+                        ->copyableState(function ($state) {
+                            return ($state);
+                        })
+                        ->copyMessage('Tersalin')
                         ->sortable(),
 
                 ]),
 
                 ColumnGroup::make('Status', [
 
-                    IconColumn::make('is_active')
+                    CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->boolean()
-                        ->sortable(),
+                        ->sortable()
+                        ->alignCenter(),
 
                 ]),
 
@@ -228,15 +285,20 @@ class QismDetailResource extends Resource
                     ->constraintPickerColumns(1)
                     ->constraints([
 
-                        TextConstraint::make('abbr_qism')
+                        SelectConstraint::make('qism_id')
                             ->label('Qism')
+                            ->options(Qism::whereIsActive(1)->pluck('abbr_qism', 'id'))
                             ->nullable(),
 
-                        TextConstraint::make('qism')
+                        TextConstraint::make('abbr_qism_detail')
+                            ->label('Qism Detail')
+                            ->nullable(),
+
+                        TextConstraint::make('qism_detail')
                             ->label('Nama')
                             ->nullable(),
 
-                        TextConstraint::make('kode_qism')
+                        TextConstraint::make('kode_qism_detail')
                             ->label('Kode')
                             ->nullable(),
 
@@ -267,19 +329,28 @@ class QismDetailResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
+
+                ImportAction::make()
+                    ->label('Import')
+                    ->importer(QismDetailImporter::class)
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
-
 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
+                ExportBulkAction::make()
+                    ->label('Export')
+                    ->exporter(QismDetailExporter::class),
+
             ]);
     }
 
@@ -297,6 +368,14 @@ class QismDetailResource extends Resource
             'create' => Pages\CreateQismDetail::route('/create'),
             'view' => Pages\ViewQismDetail::route('/{record}'),
             'edit' => Pages\EditQismDetail::route('/{record}/edit'),
+            // 'managemapel' => Pages\ManageMapel::route('/{record}/mapel'),
         ];
     }
+
+    // public static function getRecordSubNavigation(Page $page): array
+    // {
+    //     return $page->generateNavigationItems([
+    //         ManageMapel::class,
+    //     ]);
+    // }
 }

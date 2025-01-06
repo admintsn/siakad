@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('qisms', function (Blueprint $table) {
+            $table->string('kode_surat')->nullable();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();

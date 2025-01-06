@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\MahadResource\Pages;
 
+use App\EditTrait;
 use App\Filament\Admin\Resources\MahadResource;
 use Filament\Actions;
 use Filament\Actions\Action;
@@ -11,13 +12,5 @@ class EditMahad extends EditRecord
 {
     protected static string $resource = MahadResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-            Action::make('Back to List')
-                ->url($this->getResource()::getUrl('index')),
-        ];
-    }
+    use EditTrait;
 }

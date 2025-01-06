@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,27 +10,13 @@ class StatusWalisantri extends Model
 {
     public function walisantris()
     {
-        return $this->hasMany(Walisantri::class);
+        return $this->hasMany(Walisantri::class, 'ak_status_id');
     }
 
-    public static function boot()
+    public function walisantris2()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->hasMany(Walisantri::class, 'ik_status_id');
     }
+
+    use log;
 }

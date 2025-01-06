@@ -2,39 +2,31 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class PendidikanTerakhirWalisantri extends Model
 {
-    public function walisantris()
-    {
-        return $this->hasMany(Walisantri::class);
-    }
-
     public function pendidikanformals()
     {
         return $this->hasMany(Pendidikanformal::class);
     }
 
-    public static function boot()
+    public function walisantris()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->hasMany(Walisantri::class, 'ak_pend_terakhir_id');
     }
+
+    public function walisantris2()
+    {
+        return $this->hasMany(Walisantri::class, 'ik_pend_terakhir_id');
+    }
+
+    public function walisantris3()
+    {
+        return $this->hasMany(Walisantri::class, 'w_pend_terakhir_id');
+    }
+
+    use log;
 }

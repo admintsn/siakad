@@ -15,6 +15,8 @@ return new class extends Migration
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+
+            $table->dropColumn(['mahad_id', 'qism_id', 'qism_detail_id', 'kelas_id']);
         });
     }
 

@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class Semester extends Model
 {
+    public function qism()
+    {
+        return $this->belongsTo(Qism::class);
+    }
+
     public function kelasSantris()
     {
         return $this->hasMany(KelasSantri::class);
@@ -22,29 +28,10 @@ class Semester extends Model
         return $this->belongsTo(Sem::class);
     }
 
-    public function sem_s()
+    public function sem_sels()
     {
         return $this->belongsTo(Sem::class, 'sem_sel');
     }
 
-    public static function boot()
-    {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
-    }
+    use log;
 }

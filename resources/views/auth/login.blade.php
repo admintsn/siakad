@@ -27,19 +27,31 @@
                     autocomplete="current-password" />
             </div>
 
-            <div class="block mt-4">
+            {{-- <div class="block mt-4">
                 <label for="remember_me" class="flex items-center">
                     <x-checkbox id="remember_me" name="remember" />
                     <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
                 </label>
-            </div>
+            </div> --}}
+
+            <div class="flex items-between justify-between mt-4">
+                <div class="grid grid-cols-1">
+    
+                    <p class="text-xs">WA Admin untuk bantuan dan request password</p>
+                    </br>
+                    <a aria-label="Chat on WhatsApp"
+                        href="https://wa.me/6282210862400?text=Bismillah,+mohon+informasi+password+atas+nomor+KK+:+(isi+nomor+KK)"
+                        target="blank">
+                        <img alt="Chat on WhatsApp" src="WhatsAppButtonWhiteSmall.png" width="175" />
+                    </a>
+                </div>
 
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                {{-- <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
-                </a>
+                </a> --}}
                 @endif
 
                 <x-button class="ms-4">

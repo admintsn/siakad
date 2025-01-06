@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,24 +23,10 @@ class TahunAjaranAktif extends Model
         return $this->belongsTo(Semester::class);
     }
 
-    public static function boot()
+    public function sem()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsTo(Sem::class,'semester_id');
     }
+
+    use log;
 }

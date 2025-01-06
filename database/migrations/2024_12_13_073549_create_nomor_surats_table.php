@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('tanggal_surat')->nullable();
             $table->string('nomor')->nullable();
-            $table->foreignId('mahad_id')->nullable()
+            $table->foreignId('lembaga_surat_id')->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
@@ -39,15 +39,17 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
+            $table->string('bulan_masehi')->nullable();
             $table->foreignId('tahunmberjalan_id')->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
             $table->string('nomor_surat')->nullable();
             $table->string('perihal_surat')->nullable();
+            $table->text('alamat_surat')->nullable();
             $table->text('file_raw')->nullable();
             $table->text('file_signed')->nullable();
-            $table->boolean('is_confirned')->nullable();
+            $table->boolean('is_confirmed')->nullable();
             $table->boolean('is_printed')->nullable();
             $table->boolean('is_signed')->nullable();
             $table->boolean('is_scanned')->nullable();

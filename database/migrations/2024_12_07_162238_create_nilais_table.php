@@ -12,6 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('nilais', function (Blueprint $table) {
+            $table->foreignId('semester_berjalan_id')->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
+
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
@@ -21,8 +26,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-    }
+    public function down(): void {}
 };

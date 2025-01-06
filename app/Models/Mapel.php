@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,24 +18,15 @@ class Mapel extends Model
         return $this->belongsTo(JenisSoal::class);
     }
 
-    public static function boot()
+    public function kategoriSoal()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsTo(KategoriSoal::class);
     }
+
+    public function qismDetails()
+    {
+        return $this->belongsToMany(QismDetail::class);
+    }
+
+    use log;
 }

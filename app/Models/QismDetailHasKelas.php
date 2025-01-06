@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class QismDetailHasKelas extends Model
 {
+    public function qism()
+    {
+        return $this->belongsTo(Qism::class);
+    }
+
     public function qismDetail()
     {
         return $this->belongsTo(QismDetail::class);
@@ -17,24 +23,20 @@ class QismDetailHasKelas extends Model
         return $this->belongsTo(Kelas::class);
     }
 
-    public static function boot()
+    public function qism_ss()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsTo(Qism::class, 'qism_s');
     }
+
+    public function qismDetail_ss()
+    {
+        return $this->belongsTo(QismDetail::class, 'qism_detail_s');
+    }
+
+    public function kelas_ss()
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_s');
+    }
+
+    use log;
 }

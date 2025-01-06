@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,24 +18,15 @@ class PesanDaftar extends Model
         return $this->hasOne(TahunBerjalan::class);
     }
 
-    public static function boot()
+    public function waktuDatang()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsTo(WaktuDatangKembali::class, 'waktu_datang');
     }
+
+    public function waktuKembali()
+    {
+        return $this->belongsTo(WaktuDatangKembali::class, 'waktu_kembali');
+    }
+
+    use log;
 }

@@ -13,8 +13,17 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                // "tsn-header": "#3D74AC",
+                "tsn-header": "#274043",
+                "tsn-bg" : "#f5f3e3",
+                "tsn-accent" : "#d3c281",
+                "tsn-alert" : "#308d78",
+                // "tsn-bg" : "#CCE3EB",
+            },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                'sfpro' : ['SF Pro'],
             },
         },
     },

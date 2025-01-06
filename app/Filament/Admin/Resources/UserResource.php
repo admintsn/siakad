@@ -4,6 +4,8 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
+use App\Filament\Exports\UserExporter;
+use App\Filament\Imports\UserImporter;
 use App\Models\Panelrole;
 use App\Models\Qism;
 use App\Models\User;
@@ -13,10 +15,13 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn;
@@ -48,11 +53,15 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'User';
 
-    // protected static ?int $navigationSort = 900000000;
+    protected static ?int $navigationSort = 900000000;
 
     // protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    // protected static ?string $cluster = ManageUser::class;
+    // protected static ?string $cluster = AdminClustersUser::class;
+
+    protected static ?string $navigationGroup = 'Users';
+
+    // protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
@@ -101,7 +110,6 @@ class UserResource extends Resource
 
                             ToggleButtons::make('mudirqism')
                                 ->label('Mudir Qism')
-                                ->required()
                                 ->inline()
                                 ->multiple()
                                 ->options(Qism::where('is_active', true)->pluck('abbr_qism', 'id')),
@@ -198,6 +206,19 @@ class UserResource extends Resource
                         ->sortable(),
                 ]),
 
+                ColumnGroup::make('Mudir Qism', [
+
+                    // TextColumn::make('qism.abbr_qism')
+                    //     ->label('Mudir Qism')
+                    //     ->searchable(isIndividual: true, isGlobal: false)
+                    //     ->copyable()
+                    //     ->copyableState(function ($state) {
+                    //         return ($state);
+                    //     })
+                    //     ->copyMessage('Tersalin')
+                    //     ->sortable(),
+                ]),
+
                 ColumnGroup::make('Status', [
 
                     CheckboxColumn::make('is_active')
@@ -289,11 +310,16 @@ class UserResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
+
+                ImportAction::make()
+                    ->label('Import')
+                    ->importer(UserImporter::class)
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
 
 
@@ -303,26 +329,30 @@ class UserResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
 
+                ExportBulkAction::make()
+                    ->label('Export')
+                    ->exporter(UserExporter::class),
+
                 BulkAction::make('panelrole')
                     ->label(__('Update Panel Role'))
                     ->color('info')
                     ->action(fn(Collection $records, array $data) => $records->each(
                         function ($record) {
 
-                            dd($record->panelrole);
+                            // dd($record->panelrole);
 
-                            if ($record->panelrole = 'admin') {
+                            if ($record->panelrole == 'admin') {
 
                                 $user = User::where('id', $record->id)->first();
 
                                 $user->panelrole_id = 1;
                                 $user->save();
-                            } elseif ($record->panelrole = 'pengajar') {
+                            } elseif ($record->panelrole == 'pengajar') {
 
                                 $user = User::where('id', $record->id)->first();
                                 $user->panelrole_id = 2;
                                 $user->save();
-                            } elseif ($record->panelrole = 'walisantri') {
+                            } elseif ($record->panelrole == 'walisantri') {
 
                                 $user = User::where('id', $record->id)->first();
                                 $user->panelrole_id = 3;

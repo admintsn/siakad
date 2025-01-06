@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,24 +38,10 @@ class QismDetail extends Model
         return $this->hasMany(QismDetail::class);
     }
 
-    public static function boot()
+    public function mapels()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsToMany(Mapel::class);
     }
+
+    use log;
 }

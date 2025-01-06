@@ -12,6 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pesan_daftars', function (Blueprint $table) {
+            $table->unsignedBigInteger('w_datang')->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
+            $table->unsignedBigInteger('w_kembali')->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
             $table->boolean('is_active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
@@ -21,8 +29,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-    }
+    public function down(): void {}
 };

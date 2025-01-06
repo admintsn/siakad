@@ -2,11 +2,22 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class NomorSurat extends Model
 {
+    protected $casts = [
+        'is_confirned' => 'boolean',
+        'is_printed' => 'boolean',
+        'is_signed' => 'boolean',
+        'is_scanned' => 'boolean',
+        'is_sent' => 'boolean',
+        'is_needrevise' => 'boolean',
+        'is_revised' => 'boolean',
+    ];
+
     public function mahad()
     {
         return $this->belongsTo(Mahad::class);
@@ -42,24 +53,10 @@ class NomorSurat extends Model
         return $this->belongsTo(Santri::class);
     }
 
-    public static function boot()
+    public function lembagaSurat()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->belongsTo(LembagaSurat::class);
     }
+
+    use log;
 }

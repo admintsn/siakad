@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
         $this->app->bind(LogoutResponseContract::class, MyLogoutResponse::class);
 
         Model::unguard();
@@ -62,8 +63,5 @@ class AppServiceProvider extends ServiceProvider
                 ->deferLoading()
                 ->extremePaginationLinks();
         });
-
-        // config(['app.locale' => 'id']);
-        // Carbon::setLocale('id');
     }
 }

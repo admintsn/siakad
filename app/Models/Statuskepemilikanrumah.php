@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,7 +10,17 @@ class Statuskepemilikanrumah extends Model
 {
     public function walisantris()
     {
-        return $this->hasMany(Walisantri::class);
+        return $this->hasMany(Walisantri::class, 'al_ak_stts_rmh_id');
+    }
+
+    public function walisantris2()
+    {
+        return $this->hasMany(Walisantri::class, 'al_ik_stts_rmh_id');
+    }
+
+    public function walisantris3()
+    {
+        return $this->hasMany(Walisantri::class, 'al_w_stts_rmh_id');
     }
 
     public function pengajars()
@@ -17,24 +28,5 @@ class Statuskepemilikanrumah extends Model
         return $this->hasMany(Pengajar::class);
     }
 
-    public static function boot()
-    {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
-    }
+    use log;
 }

@@ -2,19 +2,26 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\ConfigGeneral;
 use App\Filament\Admin\Resources\PanelroleResource\Pages;
 use App\Filament\Admin\Resources\PanelroleResource\RelationManagers;
+use App\Filament\Exports\PanelroleExporter;
+use App\Filament\Imports\PanelroleImporter;
 use App\Models\Panelrole;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\QueryBuilder;
 use Filament\Tables\Filters\QueryBuilder\Constraints\BooleanConstraint;
@@ -23,7 +30,6 @@ use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Schmeits\FilamentCharacterCounter\Forms\Components\TextInput;
 
 class PanelroleResource extends Resource
 {
@@ -40,20 +46,22 @@ class PanelroleResource extends Resource
 
     protected static ?string $navigationLabel = 'Panel Role';
 
-    // protected static ?int $navigationSort = 800000000;
+    protected static ?int $navigationSort = 899000000;
 
-    // protected static ?string $navigationIcon = 'heroicon-o-Panel Roles';
+    // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
 
-    // protected static ?string $cluster = ManagePanel Role::class;
+    protected static ?string $cluster = ConfigGeneral::class;
+
+    // protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
         return $form
 
-            ->schema(static::PanelRoleFormSchema());
+            ->schema(static::PanelroleFormSchema());
     }
 
-    public static function PanelRoleFormSchema(): array
+    public static function PanelroleFormSchema(): array
     {
         return [
 
@@ -65,7 +73,8 @@ class PanelroleResource extends Resource
 
                             TextInput::make('panelrole')
                                 ->label('Panel Role')
-                                ->required(),
+                                ->required()
+                                ->unique(Panelrole::class, ignoreRecord: true),
 
                         ]),
 
@@ -112,10 +121,10 @@ class PanelroleResource extends Resource
 
                 ColumnGroup::make('Status', [
 
-                    IconColumn::make('is_active')
+                    CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->boolean()
-                        ->sortable(),
+                        ->sortable()
+                        ->alignCenter(),
 
                 ]),
 
@@ -158,22 +167,9 @@ class PanelroleResource extends Resource
                     ->constraintPickerColumns(1)
                     ->constraints([
 
-                        TextConstraint::make('name')
-                            ->label('Name')
-                            ->nullable(),
-
-                        TextConstraint::make('Panel Rolename')
-                            ->label('Panel Rolename')
-                            ->nullable(),
-
                         TextConstraint::make('panelrole')
-                            ->label('Panel')
+                            ->label('Panel Role')
                             ->nullable(),
-
-                        TextConstraint::make('email')
-                            ->label('Email')
-                            ->nullable(),
-
 
                         BooleanConstraint::make('is_active')
                             ->label('Status')
@@ -202,11 +198,16 @@ class PanelroleResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
+
+                ImportAction::make()
+                    ->label('Import')
+                    ->importer(PanelroleImporter::class)
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
 
 
@@ -215,6 +216,11 @@ class PanelroleResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
+                ExportBulkAction::make()
+                    ->label('Export')
+                    ->exporter(PanelroleExporter::class),
+
             ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\log;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel as FilamentPanel;
@@ -34,13 +35,61 @@ class User extends Authenticatable implements FilamentUser
         'panelrole',
     ];
 
+    // public function canAccessPanel(FilamentPanel $panel): bool
+    // {
+
+    //     switch (true) {
+
+    //         case ($panel->getId() === 'admin'):
+    //             if (auth()->user()->panelrole === 'admin') {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
+
+    //             break;
+
+    //         case ($panel->getId() === 'tsn'):
+    //             if (auth()->user()->panelrole === 'pengajar' || auth()->user()->panelrole === 'admin') {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
+
+    //             break;
+
+    //         case ($panel->getId() === 'walisantri'):
+    //             if (auth()->user()->panelrole === 'walisantri' || auth()->user()->panelrole === 'admin') {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
+
+    //             break;
+    //     }
+
+
+    //     // if (auth()->user()->panelrole === 'admin' && $panel->getId() === 'admin') {
+
+    //     //     return true;
+    //     // } elseif (auth()->user()->panelrole === 'pengajar' || auth()->user()->panelrole === 'admin' && $panel->getId() === 'tsn') {
+    //     //     dd(auth()->user()->panelrole, $panel->getId());
+    //     //     return true;
+    //     // } elseif (auth()->user()->panelrole === 'walisantri' || auth()->user()->panelrole === 'admin'  && $panel->getId() === 'walisantri') {
+    //     //     return true;
+    //     // } {
+
+    //     //     return false;
+    //     // }
+    // }
+
     public function canAccessPanel(FilamentPanel $panel): bool
     {
 
         switch (true) {
 
-            case ($panel->getId() === 'admin'):
-                if (auth()->user()->panelrole === 'admin') {
+            case ($panel->getId() == 'admin'):
+                if (auth()->user()->panelrole_id == 1) {
                     return true;
                 } else {
                     return false;
@@ -48,8 +97,8 @@ class User extends Authenticatable implements FilamentUser
 
                 break;
 
-            case ($panel->getId() === 'tsn'):
-                if (auth()->user()->panelrole === 'pengajar' || auth()->user()->panelrole === 'admin') {
+            case ($panel->getId() == 'tsn'):
+                if (auth()->user()->panelrole_id == 2 || auth()->user()->panelrole_id == 1) {
                     return true;
                 } else {
                     return false;
@@ -57,8 +106,8 @@ class User extends Authenticatable implements FilamentUser
 
                 break;
 
-            case ($panel->getId() === 'walisantri'):
-                if (auth()->user()->panelrole === 'walisantri' || auth()->user()->panelrole === 'admin') {
+            case ($panel->getId() == 'walisantri'):
+                if (auth()->user()->panelrole_id == 3 || auth()->user()->panelrole_id == 1) {
                     return true;
                 } else {
                     return false;
@@ -68,10 +117,10 @@ class User extends Authenticatable implements FilamentUser
         }
 
 
-        // if (auth()->user()->panelrole === 'admin' && $panel->getId() === 'admin') {
+        // if (auth()->user()->panelrole === 1 && $panel->getId() === 'admin') {
 
         //     return true;
-        // } elseif (auth()->user()->panelrole === 'pengajar' || auth()->user()->panelrole === 'admin' && $panel->getId() === 'tsn') {
+        // } elseif (auth()->user()->panelrole === 2 || auth()->user()->panelrole === 'admin' && $panel->getId() === 2) {
         //     dd(auth()->user()->panelrole, $panel->getId());
         //     return true;
         // } elseif (auth()->user()->panelrole === 'walisantri' || auth()->user()->panelrole === 'admin'  && $panel->getId() === 'walisantri') {
@@ -84,10 +133,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function getRedirectRoute()
     {
-        return match ((string)$this->panelrole) {
-            'admin' => 'admin',
-            'pengajar' => 'tsn',
-            'walisantri' => 'walisantri',
+        return match ((string)$this->panelrole_id) {
+            '1' => 'admin',
+            '2' => 'tsn',
+            '3' => 'walisantri',
         };
     }
 
@@ -143,24 +192,10 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Panelrole::class, 'mudirqism');
     }
 
-    public static function boot()
+    public function staffAdmins()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->hasMany(StaffAdmin::class);
     }
+
+    use log;
 }

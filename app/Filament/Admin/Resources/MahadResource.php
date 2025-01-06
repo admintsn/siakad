@@ -2,8 +2,11 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\Lembaga;
 use App\Filament\Admin\Resources\MahadResource\Pages;
 use App\Filament\Admin\Resources\MahadResource\RelationManagers;
+use App\Filament\Exports\MahadExporter;
+use App\Filament\Imports\MahadImporter;
 use App\Models\Mahad;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -11,11 +14,14 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\QueryBuilder;
 use Filament\Tables\Filters\QueryBuilder\Constraints\BooleanConstraint;
@@ -40,16 +46,22 @@ class MahadResource extends Resource
 
     protected static ?string $navigationLabel = 'Mahad';
 
-    // protected static ?int $navigationSort = 800000000;
+    protected static ?int $navigationSort = 700000000;
 
-    // protected static ?string $navigationIcon = 'heroicon-o-Mahads';
+    // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
 
-    // protected static ?string $cluster = ManageMahad::class;
+    // protected static ?string $cluster = Lembaga::class;
+
+    // protected static ?string $cluster = AdminClustersUser::class;
+
+    protected static ?string $navigationGroup = 'Lembaga';
+
+    // protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
         return $form
-
+        
             ->schema(static::MahadFormSchema());
     }
 
@@ -65,7 +77,8 @@ class MahadResource extends Resource
 
                             TextInput::make('mahad')
                                 ->label('Mahad')
-                                ->required(),
+                                ->required()
+                                ->unique(Mahad::class, ignoreRecord: true),
 
                         ]),
 
@@ -74,33 +87,10 @@ class MahadResource extends Resource
 
                             TextInput::make('nsp')
                                 ->label('NSPP')
-                                ->required(),
+                                ->required()
+                                ->unique(Mahad::class, ignoreRecord: true),
 
                         ]),
-
-                ])
-                ->compact(),
-
-            Section::make('Alamat')
-                ->schema([
-
-                    // Grid::make(4)
-                    //     ->schema([
-
-                    //         TextInput::make('mahad')
-                    //             ->label('Mahad')
-                    //             ->required(),
-
-                    //     ]),
-
-                    //     Grid::make(4)
-                    //     ->schema([
-
-                    //         TextInput::make('nsp')
-                    //             ->label('NSPN')
-                    //             ->required(),
-
-                    //     ]),
 
                 ])
                 ->compact(),
@@ -155,10 +145,10 @@ class MahadResource extends Resource
 
                 ColumnGroup::make('Status', [
 
-                    IconColumn::make('is_active')
+                    CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->boolean()
-                        ->sortable(),
+                        ->sortable()
+                        ->alignCenter(),
 
                 ]),
 
@@ -205,6 +195,10 @@ class MahadResource extends Resource
                             ->label('Mahad')
                             ->nullable(),
 
+                        TextConstraint::make('nsp')
+                            ->label('NSP')
+                            ->nullable(),
+
                         BooleanConstraint::make('is_active')
                             ->label('Status')
                             ->icon(false)
@@ -232,11 +226,16 @@ class MahadResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
+
+                ImportAction::make()
+                    ->label('Import')
+                    ->importer(MahadImporter::class)
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
 
 
@@ -245,6 +244,11 @@ class MahadResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
+                ExportBulkAction::make()
+                    ->label('Export')
+                    ->exporter(MahadExporter::class),
+
             ]);
     }
 

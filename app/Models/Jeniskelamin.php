@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,34 +13,15 @@ class Jeniskelamin extends Model
         return $this->hasMany(QismDetail::class);
     }
 
-    public function santris()
-    {
-        return $this->hasMany(Santri::class);
-    }
-
     public function pengajars()
     {
         return $this->hasMany(Pengajar::class);
     }
 
-    public static function boot()
+    public function santris()
     {
-        parent::boot();
-        $user = Auth::user();
-
-        if ($user === null) {
-            return;
-        } else {
-
-            static::creating(function ($model) {
-                $user = Auth::user();
-                $model->created_by = $user->username;
-                $model->updated_by = $user->username;
-            });
-            static::updating(function ($model) {
-                $user = Auth::user();
-                $model->updated_by = $user->username;
-            });
-        }
+        return $this->hasMany(Santri::class);
     }
+
+    use log;
 }

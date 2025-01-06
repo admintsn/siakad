@@ -2,8 +2,11 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Clusters\ConfigLembaga;
 use App\Filament\Admin\Resources\QismResource\Pages;
 use App\Filament\Admin\Resources\QismResource\RelationManagers;
+use App\Filament\Exports\QismExporter;
+use App\Filament\Imports\QismImporter;
 use App\Models\Qism;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -11,9 +14,12 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn;
@@ -41,11 +47,13 @@ class QismResource extends Resource
 
     protected static ?string $navigationLabel = 'Qism';
 
-    // protected static ?int $navigationSort = 800000000;
+    protected static ?int $navigationSort = 800000000;
 
     // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
 
-    // protected static ?string $cluster = ManageQism::class;
+    protected static ?string $cluster = ConfigLembaga::class;
+
+    // protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
@@ -85,6 +93,23 @@ class QismResource extends Resource
 
                             TextInput::make('kode_qism')
                                 ->label('Kode Qism')
+                                ->unique(Qism::class, ignoreRecord: true)
+                                ->required(),
+
+                        ]),
+
+                ])
+                ->compact(),
+
+            Section::make('Kode Surat')
+                ->schema([
+
+                    Grid::make(4)
+                        ->schema([
+
+                            TextInput::make('kode_surat')
+                                ->label('Kode Surat')
+                                ->unique(Qism::class, ignoreRecord: true)
                                 ->required(),
 
                         ]),
@@ -146,7 +171,23 @@ class QismResource extends Resource
                             return ($state);
                         })
                         ->copyMessage('Tersalin')
-                        ->sortable(),
+                        ->sortable()
+                        ->alignCenter(),
+
+                ]),
+
+                ColumnGroup::make('Kode Surat', [
+
+                    TextColumn::make('kode_surat')
+                        ->label('Kode Surat')
+                        ->searchable(isIndividual: true, isGlobal: false)
+                        ->copyable()
+                        ->copyableState(function ($state) {
+                            return ($state);
+                        })
+                        ->copyMessage('Tersalin')
+                        ->sortable()
+                        ->alignCenter(),
 
                 ]),
 
@@ -154,7 +195,8 @@ class QismResource extends Resource
 
                     CheckboxColumn::make('is_active')
                         ->label('Status')
-                        ->sortable(),
+                        ->sortable()
+                        ->alignCenter(),
 
                 ]),
 
@@ -209,6 +251,10 @@ class QismResource extends Resource
                             ->label('Kode')
                             ->nullable(),
 
+                        TextConstraint::make('kode_surat')
+                            ->label('Kode Surat')
+                            ->nullable(),
+
                         BooleanConstraint::make('is_active')
                             ->label('Status')
                             ->icon(false)
@@ -236,11 +282,16 @@ class QismResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
+
+                ImportAction::make()
+                    ->label('Import')
+                    ->importer(QismImporter::class)
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
 
 
@@ -249,6 +300,11 @@ class QismResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
+                ExportBulkAction::make()
+                    ->label('Export')
+                    ->exporter(QismExporter::class),
+
             ]);
     }
 
