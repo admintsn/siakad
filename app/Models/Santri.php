@@ -17,6 +17,11 @@ class Santri extends Model
         return $this->belongsTo(Walisantri::class);
     }
 
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
     public function ws()
     {
         return $this->hasOne(Walisantri::class);

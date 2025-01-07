@@ -10,10 +10,4 @@ class ListPendaftarSantriBarus extends ListRecords
 {
     protected static string $resource = PendaftarSantriBaruResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

@@ -45,7 +45,7 @@ class TsnUniqueResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->id == 1;
+        return auth()->user()->id == 1 || auth()->user()->id == 2;
     }
 
     protected static ?string $modelLabel = 'Tsn Unique';

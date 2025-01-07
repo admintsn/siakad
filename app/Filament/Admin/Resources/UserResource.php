@@ -274,8 +274,10 @@ class UserResource extends Resource
                             ->label('Username')
                             ->nullable(),
 
-                        TextConstraint::make('panelrole')
-                            ->label('Panel')
+                        SelectConstraint::make('panelrole_id')
+                            ->label('Panel Role')
+                            ->options(Panelrole::all()->pluck('panelrole', 'id'))
+                            ->multiple()
                             ->nullable(),
 
                         TextConstraint::make('email')

@@ -9,12 +9,4 @@ use Filament\Resources\Pages\EditRecord;
 class EditPendaftarSantriBaru extends EditRecord
 {
     protected static string $resource = PendaftarSantriBaruResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

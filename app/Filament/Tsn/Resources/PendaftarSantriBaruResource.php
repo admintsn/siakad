@@ -2,10 +2,12 @@
 
 namespace App\Filament\Tsn\Resources;
 
+use App\Filament\Admin\Resources\PendaftarSantriBaruResource as ResourcesPendaftarSantriBaruResource;
 use App\Filament\Tsn\Resources\PendaftarSantriBaruResource\Pages;
 use App\Filament\Tsn\Resources\PendaftarSantriBaruResource\RelationManagers;
 use App\Models\PendaftarSantriBaru;
 use App\Models\Santri;
+use App\Models\TahunBerjalan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class PendaftarSantriBaruResource extends Resource
 {
@@ -41,30 +44,12 @@ class PendaftarSantriBaruResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
+        return ResourcesPendaftarSantriBaruResource::form($form);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                //
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        return ResourcesPendaftarSantriBaruResource::table($table);
     }
 
     public static function getRelations(): array
@@ -82,5 +67,15 @@ class PendaftarSantriBaruResource extends Resource
             'view' => Pages\ViewPendaftarSantriBaru::route('/{record}'),
             'edit' => Pages\EditPendaftarSantriBaru::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $tahunberjalanaktif = TahunBerjalan::where('is_active', 1)->first();
+        $ts = TahunBerjalan::where('tb', $tahunberjalanaktif->ts)->first();
+
+        return parent::getEloquentQuery()->whereIn('qism_id', Auth::user()->mudirqism)
+            ->where('jenis_pendaftar_id', 1)
+            ->where('tahun_berjalan_id', $ts->id);
     }
 }

@@ -10,6 +10,4 @@ use Filament\Resources\Pages\ListRecords;
 class ListPendaftarSantriBarus extends ListRecords
 {
     protected static string $resource = PendaftarSantriBaruResource::class;
-
-    use ListTrait;
 }

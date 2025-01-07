@@ -45,6 +45,7 @@
                         <img alt="Chat on WhatsApp" src="WhatsAppButtonWhiteSmall.png" width="175" />
                     </a>
                 </div>
+            </div>
 
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))

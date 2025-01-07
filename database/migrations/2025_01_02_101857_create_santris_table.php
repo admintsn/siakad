@@ -54,9 +54,8 @@ return new class extends Migration
             $table->text('ps_kkh_medsos_group_nama')->nullable();
             $table->text('ps_kkh_bacaan')->nullable();
             $table->text('ps_kkh_bacaan_cara_dapat')->nullable();
-
-            
-            
+            $table->text('ps_kkh_keberadaan_nama_mhd')->nullable();
+            $table->text('ps_kkh_keberadaan_lokasi_mhd')->nullable();
 
             $table->foreignIdFor(Hafalan::class, 'hafalan_id')
                 ->nullable()
@@ -290,7 +289,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->foreignIdFor(YaTidak::class, 'is_kk_baru')
+            $table->foreignIdFor(YaTidak::class, 'is_kk_baru')
                 ->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
