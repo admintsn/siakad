@@ -48,13 +48,17 @@ use App\Models\Walisantri;
 use App\Models\YaTidak;
 use App\Models\HubunganWali;
 use App\Models\Kelas;
+use App\Models\KelasSantri;
+use App\Models\NismPerTahun;
 use App\Models\PekerjaanUtamaWalisantri;
 use App\Models\PendidikanTerakhirWalisantri;
 use App\Models\PenghasilanWalisantri;
 use App\Models\Statuskepemilikanrumah;
 use App\Models\StatusPendaftaran;
+use App\Models\StatusSantri;
 use App\Models\StatusWalisantri;
 use App\Models\TahapPendaftaran;
+use App\Models\User;
 use Carbon\Carbon;
 use Closure;
 use Filament\Actions\StaticAction;
@@ -85,7 +89,9 @@ use Filament\Tables\Columns\Layout\Grid as TableGrid;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\QueryBuilder;
 use Filament\Tables\Filters\QueryBuilder\Constraints\SelectConstraint;
@@ -3815,6 +3821,9 @@ class PendaftarSantriBaruResource extends Resource
                     ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable(),
 
+                // TextInputColumn::make('walisantri.kartu_keluarga_santri')
+                //     ->label('KK'),
+
                 TextColumn::make('nama_lengkap')
                     ->label('Santri')
                     ->searchable(isIndividual: true, isGlobal: false)
@@ -3822,7 +3831,11 @@ class PendaftarSantriBaruResource extends Resource
 
                 TextColumn::make('qism_detail.abbr_qism_detail')
                     ->label('Qism')
-                    ->searchable(isIndividual: true, isGlobal: false)
+                    // ->searchable(isIndividual: true, isGlobal: false)
+                    ->sortable(),
+
+                TextColumn::make('kelas.kelas')
+                    ->label('Kelas')
                     ->sortable(),
 
                 TextColumn::make('id')
@@ -3866,15 +3879,339 @@ class PendaftarSantriBaruResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        4 => 'success',
-                        3 => 'danger',
+                        'Lolos' => 'success',
+                        'Tidak Lolos' => 'danger',
                         2 => 'success',
                         1 => 'danger',
                     }),
 
-                TextColumn::make('kelas.kelas')
-                    ->label('Kelas')
-                    ->sortable(),
+                TextColumn::make('walisantri.is_collapse')
+                    ->label('Status Data Walisantri')
+                    ->default('Belum Lengkap')
+                    ->size(TextColumn\TextColumnSize::Large)
+                    ->weight(FontWeight::Bold)
+                    ->description(fn($record): string => "Status Data Walisantri:", position: 'above')
+                    ->formatStateUsing(function (Model $record) {
+                        $iscollapse = Walisantri::where('id', $record->walisantri_id)->first();
+                        // dd($pendaftar->ps_kadm_status);
+                        if ($iscollapse->is_collapse == false) {
+                            return ('Belum lengkap');
+                        } elseif ($iscollapse->is_collapse == true) {
+                            return ('Lengkap');
+                        }
+                    })
+                    ->badge()
+                    ->color(function (Model $record) {
+                        $iscollapse = Walisantri::where('id', $record->walisantri_id)->first();
+                        // dd($pendaftar->ps_kadm_status);
+                        if ($iscollapse->is_collapse == false) {
+                            return ('danger');
+                        } elseif ($iscollapse->is_collapse == true) {
+                            return ('success');
+                        }
+                    }),
+
+                TextColumn::make('s_emis4')
+                    ->label('Status Data Santri')
+                    ->default('Belum Lengkap')
+                    ->size(TextColumn\TextColumnSize::Large)
+                    ->weight(FontWeight::Bold)
+                    ->description(fn($record): string => "Status Data Santri:", position: 'above')
+                    ->formatStateUsing(function (Model $record) {
+                        if ($record->s_emis4 == false) {
+                            return ('Belum lengkap');
+                        } elseif ($record->s_emis4 == true) {
+                            return ('Lengkap');
+                        }
+                    })
+                    ->badge()
+                    ->color(function (Model $record) {
+                        if ($record->s_emis4 == false) {
+                            return ('danger');
+                        } elseif ($record->s_emis4 == true) {
+                            return ('success');
+                        }
+                    }),
+
+                // TextColumn::make('file_kk')
+                //     ->label('1. Kartu Keluarga')
+                //     ->description(fn(): string => 'Kartu Keluarga', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_kk !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_kk);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_akte')
+                //     ->label('2. Akte')
+                //     ->description(fn(): string => 'Akte', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_akte !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_akte);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_srs')
+                //     ->label('3. Surat Rekomendasi')
+                //     ->description(fn(): string => 'Surat Rekomendasi', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_srs !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_srs);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_ijz')
+                //     ->label('4. Ijazah')
+                //     ->description(fn(): string => 'Ijazah', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_ijz !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_ijz);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_skt')
+                //     ->label('5. Surat Keterangan Taklim')
+                //     ->description(fn(): string => 'Surat Keterangan Taklim', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_skt !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_skt);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_skuasa')
+                //     ->label('6. Surat Kuasa')
+                //     ->description(fn(): string => 'Surat Kuasa', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_skuasa !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_skuasa);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_spkm')
+                //     ->label('7. Surat Pernyataan Kesanggupan')
+                //     ->description(fn(): string => 'Surat Pernyataan Kesanggupan', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_spkm !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_spkm);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_pka')
+                //     ->label('8. Surat Permohonan Keringanan Administrasi')
+                //     ->description(fn(): string => 'Surat Permohonan Keringanan Administrasi', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_pka !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_pka);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_ktmu')
+                //     ->label('9. Surat Keterangan Tidak Mampu (U)')
+                //     ->description(fn(): string => 'Surat Keterangan Tidak Mampu (U)', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_ktmu !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_ktmu);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
+
+                // TextColumn::make('file_ktmp')
+                //     ->label('10. Surat Keterangan Tidak Mampu (P)')
+                //     ->description(fn(): string => 'Surat Keterangan Tidak Mampu (P)', position: 'above')
+                //     // ->color('white')
+                //     ->formatStateUsing(fn(string $state): string => __("Lihat"))
+                //     // ->limit(1)
+                //     ->icon('heroicon-s-eye')
+                //     ->iconColor('success')
+                //     // ->circular()
+                //     ->alignCenter()
+                //     ->placeholder(function (Model $record) {
+                //         if ($record->status_pendaftaran_id == 1 || $record->status_pendaftaran_id == 3) {
+
+                //             return (new HtmlString(''));
+                //         } else {
+                //             return (new HtmlString('Belum Upload'));
+                //         }
+                //     })
+                //     ->url(function (Model $record) {
+                //         if ($record->file_ktmp !== null) {
+
+                //             return ("https://psb.tsn.ponpes.id/storage/" . $record->file_ktmp);
+                //         }
+                //     })
+                //     ->badge()
+                //     ->color('success')
+                //     ->openUrlInNewTab(),
 
                 TextColumn::make('umur')
                     ->label('Umur')
@@ -3933,8 +4270,328 @@ class PendaftarSantriBaruResource extends Resource
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->hidden(auth()->user()->id <> 1),
                 ]),
-            ]);
+            ])->bulkActions([
+                Tables\Actions\BulkAction::make('lolostahap1')
+                    ->label(__('Lolos Tahap 1'))
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('success')
+                    ->modalHeading('Ubah Status Santri Lolos ke Tahap Selanjutnya?')
+                    ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $statususer = User::where('id', $record->walisantri->user->id)->first();
+                            $statususer->is_active = 1;
+                            $statususer->save();
+
+                            $data['status_pendaftaran_id'] = 4;
+                            $data['tahap_pendaftaran_id'] = 2;
+                            $data['deskripsitahap'] = 'Alhamdulillah, ananda lolos ke tahap berikutnya';
+                            $record->update($data);
+
+                            return $record;
+
+                            Notification::make()
+                                ->success()
+                                ->title('Status Ananda telah diupdate')
+                                // ->persistent()
+                                ->color('Success')
+                                ->send();
+                        }
+                    ))
+                    ->deselectRecordsAfterCompletion(),
+
+                Tables\Actions\BulkAction::make('tidaklolostahap1')
+                    ->label(__('Tidak Lolos Tahap 1'))
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-exclamation-triangle')
+                    ->modalIconColor('danger')
+                    ->modalHeading(new HtmlString('Ubah Status Santri <strong class="text-red">Tidak</strong> Lolos ke Tahap Selanjutnya?'))
+                    ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $santris = Santri::where('walisantri_id', $record->walisantri_id)->pluck('id');
+
+                            $countstatusaktif = StatusSantri::whereIn('santri_id', $santris)
+                                ->where('stat_santri_id', 3)->count();
+
+                            if ($countstatusaktif == 0) {
+                                $statususer = User::where('id', $record->walisantri->user->id)->first();
+                                $statususer->is_active = 0;
+                                $statususer->save();
+
+                                $data['status_pendaftaran_id'] = 3;
+                                $data['tahap_pendaftaran_id'] = 1;
+                                $data['deskripsitahap'] = 'Ananda tidak dapat melanjutkan ke tahap berikutnya';
+                                $record->update($data);
+
+                                return $record;
+                            } else {
+                                $data['status_pendaftaran_id'] = 3;
+                                $data['tahap_pendaftaran_id'] = 1;
+                                $data['deskripsitahap'] = 'Ananda tidak dapat melanjutkan ke tahap berikutnya';
+                                $record->update($data);
+
+                                return $record;
+                            }
+
+                            Notification::make()
+                                ->success()
+                                ->title('Status Ananda telah diupdate')
+                                // ->persistent()
+                                ->color('Success')
+                                ->send();
+                        }
+                    ))->deselectRecordsAfterCompletion(),
+
+
+                // //tombol diterima
+                // Tables\Actions\BulkAction::make('diterima')
+                //     ->label(__('Diterima'))
+                //     ->color('success')
+                //     ->requiresConfirmation()
+                //     ->modalIcon('heroicon-o-check-circle')
+                //     ->modalIconColor('success')
+                //     ->modalHeading('Ubah Status menjadi "Diterima sebagai santri?"')
+                //     ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                //     ->modalSubmitActionLabel('Simpan')
+                //     ->action(fn(Collection $records, array $data) => $records->each(
+                //         function ($record) {
+
+                //             $tahun = Carbon::now()->year;
+
+                //             $getnismstart = NismPerTahun::where('tahun', $tahun)->first();
+                //             $nismstart = $getnismstart->nismstart;
+                //             $abbrtahun = $getnismstart->abbr_tahun;
+
+                //             $ceknismstartsantri = Santri::where('nism', $nismstart)->count();
+
+                //             $nismterakhir = Santri::where('nism', 'LIKE', $abbrtahun . '%')->max('nism');
+
+                //             $nismbaru = $nismterakhir + 1;
+
+                //             // dd($tahun, $nismstart, $ceknismstartsantri, $nismterakhir, $nismbaru);
+
+                //             $cektahap = $record->tahap;
+
+                //             if ($cektahap === 'Tahap 2') {
+
+                //                 if ($ceknismstartsantri === 0) {
+
+                //                     $statussantri = StatusSantri::where('santri_id', $record->id)->first();
+                //                     $statussantri->status = 'Aktif';
+                //                     $statussantri->save();
+
+                //                     $data['nism'] = $nismstart;
+                //                     $data['status_tahap'] = 'Diterima';
+                //                     $data['tahap'] = 'Tahap 3';
+                //                     $data['deskripsitahap'] = 'Alhamdulillah, ananda diterima sebagai santri Mahad Tadzimussunnah Sine Ngawi';
+                //                     $record->update($data);
+
+                //                     return $record;
+
+                //                     Notification::make()
+                //                         ->success()
+                //                         ->title('Status Ananda telah diupdate')
+                //                         ->persistent()
+                //                         ->color('Success')
+                //                         ->send();
+                //                 } elseif ($ceknismstartsantri === 1) {
+
+                //                     $statussantri = StatusSantri::where('santri_id', $record->id)->first();
+                //                     $statussantri->status = 'Aktif';
+                //                     $statussantri->save();
+
+                //                     $data['nism'] = $nismbaru;
+                //                     $data['status_tahap'] = 'Diterima';
+                //                     $data['tahap'] = 'Tahap 3';
+                //                     $data['deskripsitahap'] = 'Alhamdulillah, ananda diterima sebagai santri Mahad Tadzimussunnah Sine Ngawi';
+                //                     $record->update($data);
+
+                //                     return $record;
+
+                //                     Notification::make()
+                //                         ->success()
+                //                         ->title('Status Ananda telah diupdate')
+                //                         ->persistent()
+                //                         ->color('Success')
+                //                         ->send();
+                //                 }
+                //             } elseif ($cektahap !== 'Tahap 2') {
+
+                //                 Notification::make()
+                //                     // ->success()
+                //                     ->title('Status santri masih Tahap 1!')
+                //                     ->icon('heroicon-o-exclamation-triangle')
+                //                     ->iconColor('danger')
+                //                     ->persistent()
+                //                     ->color('warning')
+                //                     ->send();
+                //             }
+                //         }
+                //     ))
+                //     ->deselectRecordsAfterCompletion(),
+
+                // Tables\Actions\BulkAction::make('tidakditerima')
+                //     ->label(__('Tidak Diterima'))
+                //     ->color('danger')
+                //     ->requiresConfirmation()
+                //     ->modalIcon('heroicon-o-exclamation-triangle')
+                //     ->modalIconColor('danger')
+                //     ->modalHeading('Ubah Status menjadi "Tidak diterima sebagai santri?"')
+                //     ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                //     ->modalSubmitActionLabel('Simpan')
+                //     ->action(fn(Collection $records, array $data) => $records->each(
+                //         function ($record) {
+
+                //             $cektahap = $record->tahap;
+
+                //             // dd($cektahap);
+
+                //             if ($cektahap === 'Tahap 2') {
+
+                //                 $statussantri = StatusSantri::where('santri_id', $record->id)->first();
+                //                 $statussantri->status = 'Tidak Diterima';
+                //                 $statussantri->save();
+
+                //                 $santris = Santri::where('kartu_keluarga', $record->kartu_keluarga)->pluck('id');
+
+                //                 $countstatusaktif = StatusSantri::whereIn('santri_id', $santris)
+                //                     ->where('status', 'Aktif')->count();
+
+                //                 if ($countstatusaktif === 0) {
+                //                     $statususer = User::where('username', $record->kartu_keluarga)->first();
+                //                     $statususer->is_active = 0;
+                //                     $statususer->save();
+                //                 }
+
+                //                 $data['status_tahap'] = 'Tidak Diterima';
+                //                 $data['deskripsitahap'] = 'Qodarullah, ananda tidak diterima sebagai santri Mahad Tadzimussunnah Sine Ngawi';
+                //                 $record->update($data);
+
+                //                 return $record;
+
+                //                 Notification::make()
+                //                     ->success()
+                //                     ->title('Status Ananda telah diupdate')
+                //                     ->persistent()
+                //                     ->color('Success')
+                //                     ->send();
+                //             } elseif ($cektahap !== 'Tahap 2') {
+                //                 Notification::make()
+                //                     // ->success()
+                //                     ->title('Status santri masih Tahap 1!')
+                //                     ->icon('heroicon-o-exclamation-triangle')
+                //                     ->iconColor('danger')
+                //                     ->persistent()
+                //                     ->color('warning')
+                //                     ->send();
+                //             }
+                //         }
+                //     ))
+                //     ->deselectRecordsAfterCompletion(),
+
+                Tables\Actions\BulkAction::make('reset')
+                    ->label(__('Reset'))
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-arrow-path')
+                    ->modalIconColor('gray')
+                    ->modalHeading(new HtmlString('Reset Status Santri ?'))
+                    ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $statususer = User::where('id', $record->walisantri->user->id)->first();
+                            $statususer->is_active = 1;
+                            $statususer->save();
+
+                            $data['status_pendaftaran_id'] = null;
+                            $data['tahap_pendaftaran_id'] = 1;
+                            $data['deskripsitahap'] = null;
+                            $record->update($data);
+
+                            return $record;
+
+                            Notification::make()
+                                ->success()
+                                ->title('Status Ananda telah diupdate')
+                                // ->persistent()
+                                ->color('Success')
+                                ->send();
+                        }
+                    ))->deselectRecordsAfterCompletion(),
+
+                Tables\Actions\BulkAction::make('proper')
+                    ->label(__('Proper'))
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('success')
+                    ->modalHeading('Ubah Status Santri Lolos ke Tahap Selanjutnya?')
+                    ->modalDescription('Setelah klik tombol "Simpan", maka status akan berubah')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->visible(auth()->user()->id == 1)
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $properws = Walisantri::where('id', $record->walisantri_id)->first();
+                            $properws->nama_kpl_kel_santri = Str::ucwords(strtolower($record->walisantri->nama_kpl_kel_santri));
+
+                            $properws->ak_nama_lengkap = Str::ucwords(strtolower($record->walisantri->ak_nama_lengkap));
+                            $properws->ak_nama_kunyah = Str::ucwords(strtolower($record->walisantri->ak_nama_kunyah));
+                            $properws->ak_tempat_lahir = Str::ucwords(strtolower($record->walisantri->ak_tempat_lahir));
+                            $properws->ak_kep_kel_kk = Str::ucwords(strtolower($record->walisantri->ak_kep_kel_kk));
+
+                            $properws->ik_nama_lengkap = Str::ucwords(strtolower($record->walisantri->ik_nama_lengkap));
+                            $properws->ik_nama_kunyah = Str::ucwords(strtolower($record->walisantri->ik_nama_kunyah));
+                            $properws->ik_tempat_lahir = Str::ucwords(strtolower($record->walisantri->ik_tempat_lahir));
+                            $properws->ik_kep_kel_kk = Str::ucwords(strtolower($record->walisantri->ik_kep_kel_kk));
+
+                            $properws->w_nama_lengkap = Str::ucwords(strtolower($record->walisantri->w_nama_lengkap));
+                            $properws->w_nama_kunyah = Str::ucwords(strtolower($record->walisantri->w_nama_kunyah));
+                            $properws->w_tempat_lahir = Str::ucwords(strtolower($record->walisantri->w_tempat_lahir));
+                            $properws->w_kep_kel_kk = Str::ucwords(strtolower($record->walisantri->w_kep_kel_kk));
+
+                            $properws->save();
+
+                            $properuser = User::where('id', $record->walisantri->user->id)->first();
+                            $properuser->name = Str::ucwords(strtolower($record->walisantri->user->name));
+                            $properuser->save();
+
+                            $data['nama_lengkap'] = Str::ucwords(strtolower($record->nama_lengkap));
+                            $data['nama_panggilan'] = Str::ucwords(strtolower($record->nama_panggilan));
+                            $data['tempat_lahir'] = Str::ucwords(strtolower($record->tempat_lahir));
+                            $data['nama_kpl_kel'] = Str::ucwords(strtolower($record->nama_kpl_kel));
+                            $record->update($data);
+
+                            return $record;
+
+                            Notification::make()
+                                ->success()
+                                ->title('Status Ananda telah diupdate')
+                                // ->persistent()
+                                ->color('Success')
+                                ->send();
+                        }
+                    ))
+                    ->deselectRecordsAfterCompletion(),
+
+            ])
+            ->checkIfRecordIsSelectableUsing(
+
+                fn(Model $record): bool => $record->status_pendaftaran_id == 4 || $record->status_pendaftaran_id == null || auth()->user()->id == 1,
+            );
     }
 
     public static function getRelations(): array

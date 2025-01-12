@@ -19,12 +19,19 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\BooleanConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\DateConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\SelectConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class KelasSantriResource extends Resource
 {
@@ -32,7 +39,7 @@ class KelasSantriResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->id == 1;
+        return auth()->user()->id == 1 || auth()->user()->id == 2;
     }
 
     protected static ?string $modelLabel = 'Kelas Santri';
@@ -63,14 +70,14 @@ class KelasSantriResource extends Resource
             ->columns([
                 TextColumn::make('santri_id')
                     ->label('Santri ID')
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->toggleable()
                     ->toggledHiddenByDefault(true)
                     ->sortable(),
 
                 TextColumn::make('santri.nism')
-                    ->label('Santri-NISM')
-                    ->searchable(isIndividual: true)
+                    ->label('NISM')
+                    // ->searchable(isIndividual: true)
                     ->extraAttributes([
                         'style' => 'width:150px'
                     ])
@@ -79,8 +86,9 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('qism_detail_id')
                     ->label('Qism Detail')
                     ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->sortable()
+                    ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:150px'
                     ]),
@@ -88,15 +96,16 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('kelas_id')
                     ->label('Kelas')
                     ->options(Kelas::whereIsActive(1)->pluck('kelas', 'id'))
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->sortable()
+                    ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:150px'
                     ]),
 
                 TextInputColumn::make('kelas_internal')
                     ->label('Kelas Internal')
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -104,29 +113,13 @@ class KelasSantriResource extends Resource
                     ])
                     ->sortable(),
 
-                TextInputColumn::make('kelas_internal_barab')
-                    ->label('Kelas Internal Bahasa Arab')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    // ->toggledHiddenByDefault(true)
-                    ->extraAttributes([
-                        'style' => 'width:150px'
-                    ])
-                    ->sortable(),
-
-                TextInputColumn::make('kelas_internal_matematika')
-                    ->label('Kelas Internal Matematika')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    // ->toggledHiddenByDefault(true)
-                    ->extraAttributes([
-                        'style' => 'width:150px'
-                    ])
-                    ->sortable(),
+                CheckboxColumn::make('is_mustamiah')
+                    ->label('Mustamiah?')
+                    ->alignCenter(),
 
                 TextInputColumn::make('halaqoh')
                     ->label('Halaqoh')
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -136,58 +129,20 @@ class KelasSantriResource extends Resource
 
                 TextColumn::make('santri.nama_lengkap')
                     ->label('Santri')
-                    ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable(),
 
                 TextColumn::make('walisantri.ak_nama_lengkap')
                     ->label('Nama Walisantri')
-                    ->searchable(isIndividual: true)
-                    ->sortable(),
-
-                TextColumn::make('walisantri.user.id')
-                    ->label('User ID')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    ->toggledHiddenByDefault(true)
-                    ->sortable(),
-
-                TextInputColumn::make('walisantri.user.username')
-                    ->label('Username')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    ->toggledHiddenByDefault(true)
-                    ->extraAttributes([
-                        'style' => 'width:200px'
-                    ])
-                    ->sortable(),
-
-                TextColumn::make('user.tsnunique')
-                    ->label('tsnunique')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    ->toggledHiddenByDefault(true)
-                    ->sortable(),
-
-                TextColumn::make('walisantri.ak_nama_kunyah')
-                    ->label('Nama Hijroh')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    ->toggledHiddenByDefault(true)
-                    ->sortable(),
-
-                TextInputColumn::make('kartu_keluarga')
-                    ->label('KelasSantri-KK')
-                    ->searchable(isIndividual: true)
-                    ->extraAttributes([
-                        'style' => 'width:200px'
-                    ])
+                    // ->searchable(isIndividual: true)
                     ->sortable(),
 
                 SelectColumn::make('tahun_berjalan_id')
                     ->label('Tahun Berjalan')
                     ->options(TahunBerjalan::whereIsActive(1)->pluck('tb', 'id'))
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->sortable()
+                    ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:200px'
                     ]),
@@ -195,8 +150,9 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('tahun_ajaran_id')
                     ->label('Tahun Ajaran')
                     ->options(TahunAjaran::whereIsActive(1)->pluck('abbr_ta', 'id'))
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->sortable()
+                    ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:200px'
                     ]),
@@ -204,51 +160,87 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('semester_berjalan_id')
                     ->label('Semester Berjalan')
                     ->options(SemesterBerjalan::whereIsActive(1)->pluck('semester_berjalan', 'id'))
-                    ->searchable(isIndividual: true)
+                    // ->searchable(isIndividual: true)
                     ->sortable()
+                    ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:200px'
                     ]),
 
-                SelectColumn::make('semester_id')
-                    ->label('Semester')
-                    ->options(Sem::whereIsActive(1)->pluck('semester', 'id'))
-                    ->searchable(isIndividual: true)
-                    ->sortable()
-                    ->extraAttributes([
-                        'style' => 'min-width:200px'
-                    ]),
-
-                SelectColumn::make('qism_id')
-                    ->label('Qism')
-                    ->options(Qism::whereIsActive(1)->pluck('abbr_qism', 'id'))
-                    ->searchable(isIndividual: true)
-                    ->sortable()
-                    ->extraAttributes([
-                        'style' => 'min-width:200px'
-                    ]),
-
-
-
-                TextColumn::make('walisantri_id')
-                    ->label('Walisantri ID')
-                    ->searchable(isIndividual: true)
+                TextInputColumn::make('kelas_internal_barab')
+                    ->label('Kelas Internal Bahasa Arab')
+                    // ->searchable(isIndividual: true)
                     ->toggleable()
-                    ->toggledHiddenByDefault(true)
-                    ->sortable(),
-
-                TextInputColumn::make('walisantri.ak_no_kk')
-                    ->label('Walisantri-KK')
-                    ->searchable(isIndividual: true)
-                    ->toggleable()
-                    ->toggledHiddenByDefault(true)
+                    // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
-                        'style' => 'width:200px'
+                        'style' => 'width:150px'
                     ])
                     ->sortable(),
+
+                TextInputColumn::make('kelas_internal_matematika')
+                    ->label('Kelas Internal Matematika')
+                    // ->searchable(isIndividual: true)
+                    ->toggleable()
+                    // ->toggledHiddenByDefault(true)
+                    ->extraAttributes([
+                        'style' => 'width:150px'
+                    ])
+                    ->sortable(),
+
             ])
+            ->recordUrl(null)
+            ->defaultSort('santri.nama_lengkap')
+            ->searchOnBlur()
             ->filters([
-                //
+                QueryBuilder::make()
+                    ->constraintPickerColumns(1)
+                    ->constraints([
+
+                        // SelectConstraint::make('qism_id')
+                        //     ->label('Qism')
+                        //     ->options(Qism::whereIsActive(1)->pluck('abbr_qism', 'id'))
+                        //     ->nullable(),
+
+                        SelectConstraint::make('qism_detail_id')
+                            ->label('Qism Detail')
+                            ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
+                            ->nullable(),
+
+                        SelectConstraint::make('kelas_id')
+                            ->label('Kelas')
+                            ->options(Kelas::whereIsActive(1)->pluck('kelas', 'id'))
+                            ->nullable(),
+
+                        TextConstraint::make('nama_lengkap_santri')
+                            ->relationship(
+                                name: 'santri',
+                                titleAttribute: 'nama_lengkap',
+                            ),
+
+                        BooleanConstraint::make('is_active')
+                            ->label('Status')
+                            ->icon(false)
+                            ->nullable(),
+
+                        TextConstraint::make('created_by')
+                            ->label('Created by')
+                            ->icon(false)
+                            ->nullable(),
+
+                        TextConstraint::make('updated_by')
+                            ->label('Updated by')
+                            ->icon(false)
+                            ->nullable(),
+
+                        DateConstraint::make('created_at')
+                            ->icon(false)
+                            ->nullable(),
+
+                        DateConstraint::make('updated_at')
+                            ->icon(false)
+                            ->nullable(),
+
+                    ]),
             ])
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),
@@ -289,5 +281,17 @@ class KelasSantriResource extends Resource
             'view' => Pages\ViewKelasSantri::route('/{record}'),
             'edit' => Pages\EditKelasSantri::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+
+        $tahunberjalanaktif = TahunBerjalan::where('is_active', 1)->first();
+        $ts = TahunBerjalan::where('tb', $tahunberjalanaktif->ts)->first();
+
+        return parent::getEloquentQuery()->where('tahun_berjalan_id', $tahunberjalanaktif->id)
+            ->whereIn('qism_id', Auth::user()->mudirqism)->whereHas('statussantri', function ($query) {
+                $query->where('stat_santri_id', 3);
+            });
     }
 }

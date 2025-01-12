@@ -23,7 +23,7 @@ class PendaftarSantriBaruResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->id == 1;
+        return auth()->user()->mudirqism !== null;
     }
 
     protected static ?string $modelLabel = 'Pendaftar Santri Baru';

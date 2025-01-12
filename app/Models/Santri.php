@@ -427,5 +427,15 @@ class Santri extends Model
         return $this->belongsTo(TahunAjaran::class);
     }
 
+    public function tahun_berjalan()
+    {
+        return $this->belongsTo(TahunBerjalan::class);
+    }
+
+    public function semesterBerjalan()
+    {
+        return $this->belongsTo(SemesterBerjalan::class);
+    }
+
     use log;
 }

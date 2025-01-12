@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class NilaiLainnyaResource extends Resource
 {
@@ -20,7 +21,24 @@ class NilaiLainnyaResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->id == 1;
+
+        if (auth()->user()->id === 1 || auth()->user()->id === 2) {
+            return true;
+        } else {
+
+            $cek = Nilai::whereHas('pengajar', function ($query) {
+                $query->where('user_id', Auth::user()->id);
+            })
+                ->where('jenis_soal_id', 2)->count();
+
+            if ($cek !== 0) {
+
+                return true;
+            } else {
+
+                return false;
+            }
+        }
     }
 
     protected static ?string $modelLabel = 'Nilai Lainnya';

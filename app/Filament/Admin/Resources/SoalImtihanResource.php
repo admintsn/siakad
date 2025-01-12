@@ -389,53 +389,54 @@ class SoalImtihanResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+
+                    Action::make('reset_jumlah_print')
+                        ->label(__('Reset Jumlah Print'))
+                        // ->button()
+                        // ->outlined()
+                        ->icon('heroicon-o-arrow-path')
+                        // ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalIcon('heroicon-o-exclamation-triangle')
+                        ->modalIconColor('danger')
+                        ->modalHeading(new HtmlString('Reset Jumlah Print?'))
+                        ->modalDescription('Setelah klik tombol "Simpan", maka jumlah print akan ter-reset sesuai jumlah santri per kelas')
+                        ->modalSubmitActionLabel('Simpan')
+                        ->visible(auth()->user()->id == 1 || auth()->user()->id == 2)
+                        ->action(function (Model $record) {
+
+                            if ($record->kelas_internal === null) {
+                                $santri = KelasSantri::whereHas('statussantri', function ($query) {
+                                    $query->where('status', 'Aktif');
+                                })
+                                    ->where('qism_detail_id', $record->qism_detail_id)
+                                    ->where('tahun_berjalan_id', $record->tahun_berjalan_id)
+                                    ->where('kelas_id', $record->kelas_id)
+                                    ->count();
+
+
+                                $data['jumlah_print'] = $santri;
+                                $record->update($data);
+
+                                return $record;
+                            } elseif ($record->kelas_internal !== null) {
+
+                                $santri = KelasSantri::whereHas('statussantri', function ($query) {
+                                    $query->where('status', 'Aktif');
+                                })
+                                    ->where('qism_detail_id', $record->qism_detail_id)
+                                    ->where('tahun_berjalan_id', $record->tahun_berjalan_id)
+                                    ->where('kelas_internal', $record->kelas_internal)
+                                    ->count();
+
+
+                                $data['jumlah_print'] = $santri;
+                                $record->update($data);
+
+                                return $record;
+                            }
+                        }),
                 ])->visible(auth()->user()->id == 1 || auth()->user()->id == 2),
-                Action::make('reset_jumlah_print')
-                    ->label(__('Reset Jumlah Print'))
-                    ->button()
-                    ->outlined()
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('primary')
-                    ->requiresConfirmation()
-                    ->modalIcon('heroicon-o-exclamation-triangle')
-                    ->modalIconColor('danger')
-                    ->modalHeading(new HtmlString('Reset Jumlah Print?'))
-                    ->modalDescription('Setelah klik tombol "Simpan", maka jumlah print akan ter-reset sesuai jumlah santri per kelas')
-                    ->modalSubmitActionLabel('Simpan')
-                    ->visible(auth()->user()->id == 1 || auth()->user()->id == 2)
-                    ->action(function (Model $record) {
-
-                        if ($record->kelas_internal === null) {
-                            $santri = KelasSantri::whereHas('statussantri', function ($query) {
-                                $query->where('status', 'Aktif');
-                            })
-                                ->where('qism_detail_id', $record->qism_detail_id)
-                                ->where('tahun_berjalan_id', $record->tahun_berjalan_id)
-                                ->where('kelas_id', $record->kelas_id)
-                                ->count();
-
-
-                            $data['jumlah_print'] = $santri;
-                            $record->update($data);
-
-                            return $record;
-                        } elseif ($record->kelas_internal !== null) {
-
-                            $santri = KelasSantri::whereHas('statussantri', function ($query) {
-                                $query->where('status', 'Aktif');
-                            })
-                                ->where('qism_detail_id', $record->qism_detail_id)
-                                ->where('tahun_berjalan_id', $record->tahun_berjalan_id)
-                                ->where('kelas_internal', $record->kelas_internal)
-                                ->count();
-
-
-                            $data['jumlah_print'] = $santri;
-                            $record->update($data);
-
-                            return $record;
-                        }
-                    }),
 
             ], position: ActionsPosition::BeforeCells)
             ->groupingSettingsHidden();
