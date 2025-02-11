@@ -10,10 +10,4 @@ class ListNilaiHafalans extends ListRecords
 {
     protected static string $resource = NilaiHafalanResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

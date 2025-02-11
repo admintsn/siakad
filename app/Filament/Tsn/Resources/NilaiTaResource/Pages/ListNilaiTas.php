@@ -10,10 +10,4 @@ class ListNilaiTas extends ListRecords
 {
     protected static string $resource = NilaiTaResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

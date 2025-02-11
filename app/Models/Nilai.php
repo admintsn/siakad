@@ -74,5 +74,10 @@ class Nilai extends Model
         return $this->belongsTo(SemesterBerjalan::class);
     }
 
+    public function sem()
+    {
+        return $this->belongsTo(Sem::class);
+    }
+
     use log;
 }

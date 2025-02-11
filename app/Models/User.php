@@ -16,6 +16,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Rappasoft\LaravelAuthenticationLog\Traits\AuthenticationLoggable;
 
 // use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 
@@ -195,6 +196,16 @@ class User extends Authenticatable implements FilamentUser
     public function staffAdmins()
     {
         return $this->hasMany(StaffAdmin::class);
+    }
+
+    public function walisantris()
+    {
+        return $this->hasMany(Walisantri::class);
+    }
+
+    public function santris()
+    {
+        return $this->hasMany(Santri::class);
     }
 
     use log;

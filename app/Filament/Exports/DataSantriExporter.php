@@ -305,6 +305,18 @@ class DataSantriExporter extends Exporter
 
             ExportColumn::make('santri.nism')
                 ->label('NISM'),
+
+            ExportColumn::make('kode_nomor_rapor')
+                ->label('Kode Nomor Rapor'),
+
+            ExportColumn::make('nomor_rapor')
+                ->label('Nomor Rapor'),
+
+            ExportColumn::make('kode_nomor_ijazah')
+                ->label('Kode Nomor Ijazah'),
+
+            ExportColumn::make('nomor_ijazah')
+                ->label('Nomor Ijazah'),
         ];
     }
 

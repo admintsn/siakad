@@ -10,11 +10,4 @@ class EditPendaftarNaikQism extends EditRecord
 {
     protected static string $resource = PendaftarNaikQismResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

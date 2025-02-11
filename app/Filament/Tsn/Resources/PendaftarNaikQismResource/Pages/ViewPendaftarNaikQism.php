@@ -9,11 +9,4 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewPendaftarNaikQism extends ViewRecord
 {
     protected static string $resource = PendaftarNaikQismResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\EditAction::make(),
-        ];
-    }
 }

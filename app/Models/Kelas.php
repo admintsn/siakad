@@ -13,6 +13,11 @@ class Kelas extends Model
         return $this->hasMany(KelasSantri::class);
     }
 
+    public function jumlahPendaftars()
+    {
+        return $this->hasMany(JumlahPendaftar::class);
+    }
+
     use log;
 
 }

@@ -10,11 +10,4 @@ class EditNilaiLainnya extends EditRecord
 {
     protected static string $resource = NilaiLainnyaResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

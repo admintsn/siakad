@@ -156,10 +156,15 @@ class Santri extends Model
     {
         return $this->belongsTo(Waktutempuh::class);
     }
-
+    
     public function hafalan()
     {
         return $this->belongsTo(Hafalan::class);
+    }
+
+    public function nomorSurat()
+    {
+        return $this->belongsTo(NomorSurat::class);
     }
 
     public function nomorSurats()

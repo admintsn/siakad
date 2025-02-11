@@ -10,10 +10,4 @@ class ListPendaftarNaikQisms extends ListRecords
 {
     protected static string $resource = PendaftarNaikQismResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

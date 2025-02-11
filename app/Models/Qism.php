@@ -43,5 +43,10 @@ class Qism extends Model
         return $this->hasMany(MapelQism::class);
     }
 
+    public function jumlahPendaftars()
+    {
+        return $this->hasMany(JumlahPendaftar::class);
+    }
+
     use log;
 }

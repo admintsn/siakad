@@ -55,16 +55,16 @@ class NomorSuratResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->mudirqism !== null;
+        return auth()->user()->id == 0;
     }
 
-    protected static ?string $modelLabel = 'Nomor Surat';
+    protected static ?string $modelLabel = 'Nomor Surat LAMA';
 
-    protected static ?string $pluralModelLabel = 'Nomor Surat';
+    protected static ?string $pluralModelLabel = 'Nomor Surat LAMA';
 
-    protected static ?string $navigationLabel = 'Nomor Surat';
+    protected static ?string $navigationLabel = 'Nomor Surat LAMA';
 
-    protected static ?int $navigationSort = 600000000;
+    protected static ?int $navigationSort = 600000001;
 
     // protected static ?string $navigationIcon = 'heroicon-o-Qisms';
 

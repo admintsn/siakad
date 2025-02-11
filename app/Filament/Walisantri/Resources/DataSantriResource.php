@@ -17,6 +17,11 @@ class DataSantriResource extends Resource
 {
     protected static ?string $model = DataSantri::class;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->id == 1;
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

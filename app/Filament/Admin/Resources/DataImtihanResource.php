@@ -6,6 +6,7 @@ use App\Filament\Admin\Clusters\Imtihan;
 use App\Filament\Admin\Resources\DataImtihanResource\Pages;
 use App\Filament\Admin\Resources\DataImtihanResource\RelationManagers;
 use App\Filament\Exports\DataImtihanExporter;
+use App\Filament\Exports\NilaiExporter;
 use App\Filament\Imports\DataImtihanImporter;
 use App\Models\DataImtihan;
 use App\Models\JenisSoal;
@@ -431,6 +432,17 @@ class DataImtihanResource extends Resource
                         ->label('Status N')
                         ->alignCenter(),
 
+                    SelectColumn::make('pengajar_id')
+                        ->label('Nama Pengajar')
+                        ->options(Pengajar::where('is_active', 1)->pluck('nama', 'id'))
+                        ->sortable()
+                        ->searchable(isIndividual: true)
+                        ->hidden(!auth()->user()->id === 1 || !auth()->user()->id === 2)
+                        ->placeholder('Pilih Pengajar')
+                        ->extraAttributes([
+                            'style' => 'min-width:250px'
+                        ]),
+
                     TextInputColumn::make('kode_soal')
                         ->label('Kode Soal')
                         ->extraAttributes([
@@ -539,17 +551,6 @@ class DataImtihanResource extends Resource
                             'style' => 'min-width:250px'
                         ]),
 
-                    SelectColumn::make('pengajar_id')
-                        ->label('Nama Pengajar')
-                        ->options(Pengajar::all()->pluck('nama', 'id'))
-                        ->sortable()
-                        ->searchable(isIndividual: true)
-                        ->hidden(!auth()->user()->id === 1 || !auth()->user()->id === 2)
-                        ->placeholder('Pilih Pengajar')
-                        ->extraAttributes([
-                            'style' => 'min-width:250px'
-                        ]),
-
                     SelectColumn::make('staff_admin_id')
                         ->label('Staff Admin')
                         ->options(StaffAdmin::all()->pluck('nama_staff', 'id'))
@@ -611,6 +612,8 @@ class DataImtihanResource extends Resource
             ->defaultSort('kode_soal')
             ->recordUrl(null)
             ->searchOnBlur()
+            ->extremePaginationLinks()
+            ->defaultPaginationPageOption(5)
             ->filters([
                 QueryBuilder::make()
                     ->constraintPickerColumns(1)
@@ -929,7 +932,7 @@ class DataImtihanResource extends Resource
 
                 ExportBulkAction::make()
                     ->label('Export')
-                    ->exporter(DataImtihanExporter::class),
+                    ->exporter(NilaiExporter::class),
 
             ]);
     }

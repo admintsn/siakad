@@ -4,14 +4,18 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\KelasSantriResource\Pages;
 use App\Filament\Admin\Resources\KelasSantriResource\RelationManagers;
+use App\Filament\Exports\DataSantriExporter;
 use App\Filament\Exports\KelasSantriExporter;
 use App\Models\Kelas;
 use App\Models\KelasSantri;
 use App\Models\Qism;
 use App\Models\QismDetail;
+use App\Models\QismDetailHasKelas;
+use App\Models\Santri;
 use App\Models\Sem;
 use App\Models\SemesterBerjalan;
 use App\Models\TahunAjaran;
+use App\Models\TahunAjaranAktif;
 use App\Models\TahunBerjalan;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -31,6 +35,7 @@ use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class KelasSantriResource extends Resource
@@ -70,14 +75,14 @@ class KelasSantriResource extends Resource
             ->columns([
                 TextColumn::make('santri_id')
                     ->label('Santri ID')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->toggleable()
                     ->toggledHiddenByDefault(true)
                     ->sortable(),
 
                 TextColumn::make('santri.nism')
                     ->label('NISM')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->extraAttributes([
                         'style' => 'width:150px'
                     ])
@@ -86,8 +91,13 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('qism_detail_id')
                     ->label('Qism Detail')
                     ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
-                    // ->searchable(isIndividual: true)
-                    ->sortable()
+                    ->searchable(isIndividual: true, isGlobal: false)
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query
+                            ->orderBy('qism_detail_id', $direction)
+                            ->orderBy('kelas_id', $direction)
+                            ->orderBy('nama_lengkap', $direction);
+                    })
                     ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
                         'style' => 'min-width:150px'
@@ -96,7 +106,7 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('kelas_id')
                     ->label('Kelas')
                     ->options(Kelas::whereIsActive(1)->pluck('kelas', 'id'))
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable()
                     ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
@@ -105,7 +115,7 @@ class KelasSantriResource extends Resource
 
                 TextInputColumn::make('kelas_internal')
                     ->label('Kelas Internal')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -119,7 +129,7 @@ class KelasSantriResource extends Resource
 
                 TextInputColumn::make('halaqoh')
                     ->label('Halaqoh')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -127,20 +137,60 @@ class KelasSantriResource extends Resource
                     ])
                     ->sortable(),
 
-                TextColumn::make('santri.nama_lengkap')
+                TextColumn::make('nama_lengkap')
                     ->label('Santri')
                     ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable(),
 
+                TextInputColumn::make('kode_nomor_rapor')
+                    ->label('Kode Nomor Rapor')
+                    ->searchable(isIndividual: true, isGlobal: false)
+                    ->toggleable()
+                    // ->toggledHiddenByDefault(true)
+                    ->extraAttributes([
+                        'style' => 'width:150px'
+                    ])
+                    ->sortable(),
+
+                TextInputColumn::make('nomor_rapor')
+                    ->label('Nomor Rapor')
+                    ->searchable(isIndividual: true, isGlobal: false)
+                    ->toggleable()
+                    // ->toggledHiddenByDefault(true)
+                    ->extraAttributes([
+                        'style' => 'width:150px'
+                    ])
+                    ->sortable(),
+
+                TextInputColumn::make('kode_nomor_ijazah')
+                    ->label('Kode Nomor Ijazah')
+                    ->searchable(isIndividual: true, isGlobal: false)
+                    ->toggleable()
+                    // ->toggledHiddenByDefault(true)
+                    ->extraAttributes([
+                        'style' => 'width:150px'
+                    ])
+                    ->sortable(),
+
+                TextInputColumn::make('nomor_ijazah')
+                    ->label('Nomor Ijazah')
+                    ->searchable(isIndividual: true, isGlobal: false)
+                    ->toggleable()
+                    // ->toggledHiddenByDefault(true)
+                    ->extraAttributes([
+                        'style' => 'width:150px'
+                    ])
+                    ->sortable(),
+
                 TextColumn::make('walisantri.ak_nama_lengkap')
                     ->label('Nama Walisantri')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable(),
 
                 SelectColumn::make('tahun_berjalan_id')
                     ->label('Tahun Berjalan')
                     ->options(TahunBerjalan::whereIsActive(1)->pluck('tb', 'id'))
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable()
                     ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
@@ -150,7 +200,7 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('tahun_ajaran_id')
                     ->label('Tahun Ajaran')
                     ->options(TahunAjaran::whereIsActive(1)->pluck('abbr_ta', 'id'))
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable()
                     ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
@@ -160,7 +210,7 @@ class KelasSantriResource extends Resource
                 SelectColumn::make('semester_berjalan_id')
                     ->label('Semester Berjalan')
                     ->options(SemesterBerjalan::whereIsActive(1)->pluck('semester_berjalan', 'id'))
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable()
                     ->disabled(auth()->user()->id <> 1)
                     ->extraAttributes([
@@ -169,7 +219,7 @@ class KelasSantriResource extends Resource
 
                 TextInputColumn::make('kelas_internal_barab')
                     ->label('Kelas Internal Bahasa Arab')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -179,7 +229,7 @@ class KelasSantriResource extends Resource
 
                 TextInputColumn::make('kelas_internal_matematika')
                     ->label('Kelas Internal Matematika')
-                    // ->searchable(isIndividual: true)
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->toggleable()
                     // ->toggledHiddenByDefault(true)
                     ->extraAttributes([
@@ -189,7 +239,7 @@ class KelasSantriResource extends Resource
 
             ])
             ->recordUrl(null)
-            ->defaultSort('santri.nama_lengkap')
+            ->defaultSort('nama_lengkap')
             ->searchOnBlur()
             ->filters([
                 QueryBuilder::make()
@@ -204,18 +254,19 @@ class KelasSantriResource extends Resource
                         SelectConstraint::make('qism_detail_id')
                             ->label('Qism Detail')
                             ->options(QismDetail::whereIsActive(1)->pluck('abbr_qism_detail', 'id'))
+                            ->multiple()
                             ->nullable(),
 
                         SelectConstraint::make('kelas_id')
                             ->label('Kelas')
                             ->options(Kelas::whereIsActive(1)->pluck('kelas', 'id'))
+                            ->multiple()
                             ->nullable(),
 
-                        TextConstraint::make('nama_lengkap_santri')
-                            ->relationship(
-                                name: 'santri',
-                                titleAttribute: 'nama_lengkap',
-                            ),
+                        TextConstraint::make('nama_lengkap')
+                            ->label('Nama Santri')
+                            ->icon(false)
+                            ->nullable(),
 
                         BooleanConstraint::make('is_active')
                             ->label('Status')
@@ -261,7 +312,257 @@ class KelasSantriResource extends Resource
 
                 ExportBulkAction::make()
                     ->label('Export')
-                    ->exporter(KelasSantriExporter::class),
+                    ->exporter(DataSantriExporter::class),
+
+                Tables\Actions\BulkAction::make('kodenomorraporijazah')
+                    ->label(__('Kode Nomor Rapor dan Ijazah'))
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('success')
+                    ->modalHeading('Generate Kode Nomor Rapor dan Ijazah?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $q = Qism::where('id', $record->qism_id)->first();
+                            $kt = QismDetailHasKelas::where('qism_id', $record->qism_id)
+                                ->where('qism_detail_id', $record->qism_detail_id)
+                                ->where('kelas_id', $record->kelas_id)->first();
+
+                            // dd($kt->terakhir);
+                            $ta = TahunAjaran::where('id', $record->tahun_ajaran_id)->first();
+
+                            $taaktif = TahunAjaranAktif::where('qism_id', $record->qism_id)
+                                ->where('tahun_ajaran_id', $record->tahun_ajaran_id)
+                                ->where('is_active', 1)->first();
+
+                            $sm = Sem::where('id', $taaktif->semester_id)->first();
+
+                            $raporterakhir = KelasSantri::max('nomor_rapor');
+                            $ijazahterakhir = KelasSantri::max('nomor_ijazah');
+
+                            // dd($q->id, $ta->abbr_ta, $sm->id, $raporterakhir, $ijazahterakhir);
+
+                            if ($kt->terakhir == null) {
+
+                                // dd('1');
+
+                                if ($record->nomor_rapor != null) {
+                                    return;
+                                } elseif ($record->nomor_rapor == null) {
+
+                                    if ($raporterakhir ==  null) {
+                                        $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                        $data['nomor_rapor'] = 1;
+                                        $record->update($data);
+                                        return $record;
+                                    } elseif ($raporterakhir !=  null) {
+                                        $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                        $data['nomor_rapor'] = $raporterakhir + 1;
+                                        $record->update($data);
+                                        return $record;
+                                    }
+                                }
+                            } elseif ($kt->terakhir != null) {
+
+                                if ($record->nomor_rapor != null) {
+                                    return;
+                                } elseif ($record->nomor_rapor == null) {
+
+                                    if ($raporterakhir ==  null) {
+                                        $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                        $data['kode_nomor_ijazah'] = 'I' . $q->id . '' . $ta->abbr_ta;
+                                        $data['nomor_rapor'] = 1;
+                                        $data['nomor_ijazah'] = 1;
+                                        $record->update($data);
+                                        return $record;
+                                    } elseif ($raporterakhir !=  null) {
+                                        $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                        $data['kode_nomor_ijazah'] = 'I' . $q->id . '' . $ta->abbr_ta;
+                                        $data['nomor_rapor'] = $raporterakhir + 1;
+                                        $data['nomor_ijazah'] = $ijazahterakhir + 1;
+                                        $record->update($data);
+                                        return $record;
+                                    }
+                                }
+                            }
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('hapuskodenomorraporijazah')
+                    ->label(__('Hapus Kode Nomor Rapor dan Ijazah'))
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('danger')
+                    ->modalHeading('Hapus Kode Nomor Rapor dan Ijazah?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $data['kode_nomor_rapor'] = null;
+                            $data['kode_nomor_ijazah'] = null;
+                            $data['nomor_rapor'] = null;
+                            $data['nomor_ijazah'] = null;
+                            $record->update($data);
+                            return $record;
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('kodenomorrapor')
+                    ->label(__('Kode Nomor Rapor'))
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('success')
+                    ->modalHeading('Generate Kode Nomor Rapor?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $q = Qism::where('id', $record->qism_id)->first();
+                            $ta = TahunAjaran::where('id', $record->tahun_ajaran_id)->first();
+
+                            $taaktif = TahunAjaranAktif::where('qism_id', $record->qism_id)
+                                ->where('tahun_ajaran_id', $record->tahun_ajaran_id)
+                                ->where('is_active', 1)->first();
+
+                            $sm = Sem::where('id', $taaktif->semester_id)->first();
+
+                            $raporterakhir = KelasSantri::max('nomor_rapor');
+                            $ijazahterakhir = KelasSantri::max('nomor_ijazah');
+
+                            // dd($q->id, $ta->abbr_ta, $sm->id, $raporterakhir, $ijazahterakhir);
+
+                            if ($record->nomor_rapor != null) {
+                                return;
+                            } elseif ($record->nomor_rapor == null) {
+
+                                if ($raporterakhir ==  null) {
+                                    $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                    $data['nomor_rapor'] = 1;
+                                    $record->update($data);
+                                    return $record;
+                                } elseif ($raporterakhir !=  null) {
+                                    $data['kode_nomor_rapor'] = 'R' . $q->id . '' . $ta->abbr_ta . '' . $sm->id;
+                                    $data['nomor_rapor'] = $raporterakhir + 1;
+                                    $record->update($data);
+                                    return $record;
+                                }
+                            }
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('hapuskodenomorrapor')
+                    ->label(__('Hapus Kode Nomor Rapor'))
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('danger')
+                    ->modalHeading('Hapus Kode Nomor Rapor?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $data['kode_nomor_rapor'] = null;
+                            $data['nomor_rapor'] = null;
+                            $record->update($data);
+                            return $record;
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('kodenomorijazah')
+                    ->label(__('Kode Nomor Ijazah'))
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('success')
+                    ->modalHeading('Generate Kode Nomor Ijazah?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $q = Qism::where('id', $record->qism_id)->first();
+                            $kt = QismDetailHasKelas::where('qism_id', $record->qism_id)
+                                ->where('qism_detail_id', $record->qism_detail_id)
+                                ->where('kelas_id', $record->kelas_id)->first();
+
+                            // dd($kt->terakhir);
+                            $ta = TahunAjaran::where('id', $record->tahun_ajaran_id)->first();
+
+                            $taaktif = TahunAjaranAktif::where('qism_id', $record->qism_id)
+                                ->where('tahun_ajaran_id', $record->tahun_ajaran_id)
+                                ->where('is_active', 1)->first();
+
+                            $sm = Sem::where('id', $taaktif->semester_id)->first();
+
+                            $raporterakhir = KelasSantri::max('nomor_rapor');
+                            $ijazahterakhir = KelasSantri::max('nomor_ijazah');
+
+                            // dd($q->id, $ta->abbr_ta, $sm->id, $raporterakhir, $ijazahterakhir);
+
+                            if ($kt->terakhir == null) {
+
+                                return;
+                            } elseif ($kt->terakhir != null) {
+
+                                if ($record->nomor_ijazah != null) {
+                                    return;
+                                } elseif ($record->nomor_ijazah == null) {
+
+                                    if ($ijazahterakhir ==  null) {
+                                        $data['kode_nomor_ijazah'] = 'I' . $q->id . '' . $ta->abbr_ta;
+                                        $data['nomor_ijazah'] = 1;
+                                        $record->update($data);
+                                        return $record;
+                                    } elseif ($ijazahterakhir !=  null) {
+                                        $data['kode_nomor_ijazah'] = 'I' . $q->id . '' . $ta->abbr_ta;
+                                        $data['nomor_ijazah'] = $ijazahterakhir + 1;
+                                        $record->update($data);
+                                        return $record;
+                                    }
+                                }
+                            }
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('hapuskodenomorijazah')
+                    ->label(__('Hapus Kode Nomor Ijazah'))
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('danger')
+                    ->modalHeading('Hapus Kode Nomor Ijazah?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $data['kode_nomor_ijazah'] = null;
+                            $data['nomor_ijazah'] = null;
+                            $record->update($data);
+                            return $record;
+                        }
+                    )),
+
+                Tables\Actions\BulkAction::make('updatenamalengkap')
+                    ->label(__('Update Nama'))
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalIconColor('danger')
+                    ->modalHeading('Update Nama?')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->action(fn(Collection $records, array $data) => $records->each(
+                        function ($record) {
+
+                            $nama = Santri::where('id', $record->santri_id)->first();
+
+                            $data['nama_lengkap'] = $nama->nama_lengkap;
+                            $record->update($data);
+                            return $record;
+                        }
+                    )),
 
             ]);
     }
